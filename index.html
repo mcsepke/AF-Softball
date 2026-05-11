@@ -1074,20 +1074,20 @@
         <select onchange="onDefenseChange('P', this.value)"><option value="">— Unassigned —</option></select>
       </div>
 
-      <!-- Third Base: nudged down slightly to match pitcher gap -->
-      <div class="position-slot" id="slot-3B" style="left:26%;top:78%;">
+      <!-- Third Base: moved lower for more gap below Pitcher -->
+      <div class="position-slot" id="slot-3B" style="left:26%;top:83%;">
         <div class="position-label">3rd Base</div>
         <select onchange="onDefenseChange('3B', this.value)"><option value="">— Unassigned —</option></select>
       </div>
 
-      <!-- First Base: nudged down slightly to match pitcher gap -->
-      <div class="position-slot" id="slot-1B" style="left:74%;top:78%;">
+      <!-- First Base: moved lower for more gap below Pitcher -->
+      <div class="position-slot" id="slot-1B" style="left:74%;top:83%;">
         <div class="position-label">1st Base</div>
         <select onchange="onDefenseChange('1B', this.value)"><option value="">— Unassigned —</option></select>
       </div>
 
       <!-- Catcher: nudged down to match -->
-      <div class="position-slot" id="slot-C" style="left:50%;top:93%;">
+      <div class="position-slot" id="slot-C" style="left:50%;top:96%;">
         <div class="position-label">Catcher</div>
         <select onchange="onDefenseChange('C', this.value)"><option value="">— Unassigned —</option></select>
       </div>
@@ -1644,6 +1644,62 @@ function buildBattingList() {
     const isDP  = entry.role === "DP";
     const isEP  = entry.role === "EP";
 
+    // For EP rows, display the selected EP player name (or placeholder)
+    if (isEP) {
+      const epName   = entry.epPlayerName || entry.playerName || "";
+      const epObj    = playerByName(epName);
+      const batHand  = !epObj ? "" :
+        epObj.bats === "L" ? `<span class="bat-hand-badge bat-L">L</span>` :
+        epObj.bats === "S" ? `<span class="bat-hand-badge bat-S">SW</span>` :
+                             `<span class="bat-hand-badge bat-R">R</span>`;
+
+      row.draggable = true;
+      row.innerHTML = `
+        <div class="bat-order-num">${idx + 1}</div>
+        <div class="drag-handle"><span></span><span></span><span></span></div>
+        <div class="player-info">
+          <div class="player-name-row">
+            <span class="player-name-text">${epName || '<span style="color:var(--text3);font-style:italic">Select player…</span>'}</span>
+          </div>
+          <div class="player-meta"><span class="pos-badge pos-badge-ep">No Defense</span></div>
+        </div>
+        <div class="role-cell"></div>
+        <div class="bat-hand-cell">${batHand}</div>`;
+
+      const roleCell = row.querySelector(".role-cell");
+      roleCell.appendChild(buildRoleSelect(entry.role, idx));
+      roleCell.appendChild(buildEPSelect(epName, idx));
+
+      row.addEventListener("dragstart", e => {
+        dragSrcIdx = idx;
+        setTimeout(() => row.classList.add("dragging"), 0);
+        e.dataTransfer.effectAllowed = "move";
+      });
+      row.addEventListener("dragend", () => {
+        row.classList.remove("dragging");
+        document.querySelectorAll(".lineup-row").forEach(r => r.classList.remove("drag-over"));
+      });
+      row.addEventListener("dragover", e => {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = "move";
+        document.querySelectorAll(".lineup-row").forEach(r => r.classList.remove("drag-over"));
+        row.classList.add("drag-over");
+      });
+      row.addEventListener("drop", e => {
+        e.preventDefault();
+        if (dragSrcIdx === null || dragSrcIdx === idx) return;
+        const moved = battingOrder.splice(dragSrcIdx, 1)[0];
+        moved.manuallyMoved = true;
+        battingOrder.splice(idx, 0, moved);
+        battingOrder.forEach(e => { if (e.playerName && e.playerName !== PITCHER_PLACEHOLDER) e.manuallyMoved = true; });
+        dragSrcIdx = null;
+        buildBattingList();
+      });
+
+      list.appendChild(row);
+      return;
+    }
+
     // For DP: FLEX is the hitter (left), DP player is the defender (right)
     const flexName   = isDP ? (entry.flexName || "") : "";
     const hitterName = isDP ? flexName : entry.playerName;
@@ -1791,8 +1847,42 @@ function buildFlexSelect(currentFlex, idx) {
   return sel;
 }
 
+// EP player dropdown — all players not already in batting order as a field player
+function buildEPSelect(currentEP, idx) {
+  const sel = document.createElement("select");
+  sel.className = "lineup-select ep-select";
+
+  const o0 = document.createElement("option");
+  o0.value = "";
+  o0.textContent = "— Select Player —";
+  sel.appendChild(o0);
+
+  // All players are eligible for EP (including bench/backup)
+  const inOrderAsField = new Set(
+    battingOrder
+      .filter((e, i) => i !== idx && e.role !== "EP" && e.playerName)
+      .map(e => e.playerName)
+  );
+
+  players.forEach(p => {
+    if (inOrderAsField.has(p.name)) return;
+    const o = document.createElement("option");
+    o.value = p.name;
+    o.textContent = p.name;
+    if (p.name === currentEP) o.selected = true;
+    sel.appendChild(o);
+  });
+
+  sel.addEventListener("change", () => {
+    battingOrder[idx].epPlayerName = sel.value;
+    battingOrder[idx].playerName   = sel.value; // keep playerName in sync for display
+    buildBattingList();
+  });
+  return sel;
+}
+
 function addBattingSpot() {
-  battingOrder.push({ id: Date.now(), playerName: "", role: "EP", flexName: "" });
+  battingOrder.push({ id: Date.now(), playerName: "", role: "EP", flexName: "", epPlayerName: "", manuallyMoved: false });
   buildBattingList();
 }
 
@@ -1850,8 +1940,9 @@ function saveLineup() {
     const isEP = entry.role === "EP";
 
     const flexName   = isDP ? (entry.flexName || "") : "";
-    const hitterName = isDP ? flexName : entry.playerName;
-    const hitterObj  = playerByName(isDP ? (flexName || entry.playerName) : entry.playerName);
+    const epName     = isEP ? (entry.epPlayerName || entry.playerName || "") : "";
+    const hitterName = isDP ? flexName : isEP ? epName : entry.playerName;
+    const hitterObj  = playerByName(isDP ? (flexName || entry.playerName) : hitterName);
 
     // EP badge
     const epBadge = isEP ? `<span class="saved-role-tag saved-role-ep">EP</span>` : "";
@@ -1953,27 +2044,45 @@ const coaches = [
 function buildLineupText() {
   const lines = [];
   const date = new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
-  lines.push(`⚾ LINEUP CARD — ${date}`);
+  lines.push(`⚾ AMERICAN FREEDOM SOFTBALL`);
+  lines.push(`Lineup — ${date}`);
   lines.push("");
 
-  // ── DEFENSE ──────────────────────────────────────────────
-  lines.push("── DEFENSE ──");
-  const defOrder = ["P","C","1B","2B","3B","SS","LF","CF","RF"];
+  // ── BATTING ORDER ─────────────────────────────────────────
   const defLabels = {
     P:"Pitcher", C:"Catcher", "1B":"1st Base", "2B":"2nd Base",
     "3B":"3rd Base", SS:"Shortstop", LF:"Left Field", CF:"Center Field", RF:"Right Field"
   };
-  defOrder.forEach(key => {
-    const name = defenseAssignments[key] || "—";
-    lines.push(`${defLabels[key]}: ${name}`);
+
+  battingOrder.forEach((entry, idx) => {
+    if (entry.playerName === PITCHER_PLACEHOLDER) {
+      lines.push(`${idx + 1}. Pitcher (TBD)`);
+      return;
+    }
+
+    const isDP = entry.role === "DP";
+    const isEP = entry.role === "EP";
+    const epName = isEP ? (entry.epPlayerName || entry.playerName || "") : "";
+
+    if (isDP) {
+      const flexName = entry.flexName || "—";
+      const slot = defSlotForPlayer(entry.playerName);
+      const pos  = slot ? defLabels[slot] : "";
+      lines.push(`${idx + 1}. ${flexName} [FLEX] / ${entry.playerName} [DP]${pos ? " – " + pos : ""}`);
+    } else if (isEP) {
+      lines.push(`${idx + 1}. ${epName || "—"} [EP]`);
+    } else {
+      const slot = defSlotForPlayer(entry.playerName);
+      const pos  = slot ? defLabels[slot] : "";
+      lines.push(`${idx + 1}. ${entry.playerName}${pos ? " – " + pos : ""}`);
+    }
   });
 
-  // Backups
+  // ── BACKUPS & BENCH ───────────────────────────────────────
   lines.push("");
-  lines.push(`Backup P: ${backupAssignments.P || "—"}`);
-  lines.push(`Backup C: ${backupAssignments.C || "—"}`);
+  if (backupAssignments.P) lines.push(`Backup P: ${backupAssignments.P}`);
+  if (backupAssignments.C) lines.push(`Backup C: ${backupAssignments.C}`);
 
-  // Bench
   const onField = new Set(Object.values(defenseAssignments).filter(Boolean));
   const bench = players.filter(p =>
     !onField.has(p.name) &&
@@ -1981,29 +2090,6 @@ function buildLineupText() {
     p.name !== backupAssignments.C
   ).map(p => p.name);
   if (bench.length) lines.push(`Bench: ${bench.join(", ")}`);
-
-  lines.push("");
-
-  // ── BATTING ORDER ─────────────────────────────────────────
-  lines.push("── BATTING ORDER ──");
-  battingOrder.forEach((entry, idx) => {
-    const isDP = entry.role === "DP";
-    const isEP = entry.role === "EP";
-    const hitter = isDP && entry.flexName ? entry.flexName : entry.playerName;
-
-    let posText = "";
-    if (isEP) {
-      posText = "EP";
-    } else {
-      const slot = defSlotForPlayer(entry.playerName);
-      posText = slot ? defLabels[slot] : "";
-    }
-
-    let line = `${idx + 1}. ${hitter}`;
-    if (posText) line += ` (${posText})`;
-    if (isDP) line += ` / DP: ${entry.playerName}`;
-    lines.push(line);
-  });
 
   return lines.join("\n");
 }
