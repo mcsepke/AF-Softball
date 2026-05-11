@@ -1027,57 +1027,53 @@
     <!-- SVG Background Field -->
     <svg class="field-svg-bg" viewBox="0 0 800 720" xmlns="http://www.w3.org/2000/svg">
 
-      <!-- Sky/background -->
-      <rect width="800" height="720" fill="#1a3a1a"/>
+      <!--
+        Foul lines: Home(400,700) through 3B(245,545) → (0,300)
+                    Home(400,700) through 1B(555,545) → (800,300)
+        Outfield fence arc: endpoints (0,300) and (800,300), peak ~y=50
+        All outfielder dropdowns sit at top:14-30% = y=101-216, well below arc peak
+      -->
 
-      <!-- ── OUTFIELD GRASS ── full wedge from home to fence arc -->
-      <path d="M 400 680 L 30 720 A 620 620 0 0 1 770 720 Z" fill="#2d6e2d"/>
+      <!-- ── FOUL TERRITORY ── -->
+      <rect width="800" height="720" fill="#1e5c1e"/>
 
-      <!-- Outfield fence arc -->
-      <path d="M 45 718 A 600 600 0 0 1 755 718" fill="none" stroke="#1a4a1a" stroke-width="10"/>
-      <!-- Fence top line -->
-      <path d="M 45 718 A 600 600 0 0 1 755 718" fill="none" stroke="#fff" stroke-width="2" opacity="0.3"/>
+      <!-- ── FAIR TERRITORY (between foul lines, inside fence) ── -->
+      <!-- Fill the fair-territory wedge including the arc area -->
+      <path d="M 400 700 L 0 300 Q 400 50 800 300 Z" fill="#2d6e2d"/>
 
-      <!-- Foul lines (from home to fence) -->
-      <line x1="400" y1="672" x2="50"  y2="100" stroke="white" stroke-width="2" opacity="0.5"/>
-      <line x1="400" y1="672" x2="750" y2="100" stroke="white" stroke-width="2" opacity="0.5"/>
+      <!-- ── OUTFIELD FENCE ARC — above all outfielder dropdowns ── -->
+      <path d="M 0 300 Q 400 50 800 300" fill="none" stroke="white" stroke-width="3" opacity="0.7"/>
+      <!-- Subtle depth line behind fence -->
+      <path d="M 0 300 Q 400 50 800 300" fill="none" stroke="#4a7a30" stroke-width="7" opacity="0.4"/>
 
-      <!-- ── INFIELD DIRT ── large arc/square from 3B to 1B through home -->
-      <path d="M 170 680 Q 160 420 400 400 Q 640 420 630 680 Z" fill="#8B5E3C"/>
+      <!-- ── FOUL LINES ── -->
+      <line x1="400" y1="700" x2="0"   y2="300" stroke="white" stroke-width="2.5" opacity="0.8"/>
+      <line x1="400" y1="700" x2="800" y2="300" stroke="white" stroke-width="2.5" opacity="0.8"/>
 
-      <!-- ── INFIELD GRASS ── square rotated 45° (the diamond interior) -->
-      <!-- Diamond corners: Home(400,660), 1B(575,555), 2B(400,450), 3B(225,555) -->
-      <polygon points="400,660 575,555 400,450 225,555" fill="#2d6e2d"/>
+      <!-- ── INFIELD GRASS ── -->
+      <polygon points="400,700 555,545 400,390 245,545" fill="#2d6e2d"/>
 
-      <!-- ── BASEPATHS on the dirt (chalk lines) ── -->
-      <line x1="400" y1="660" x2="575" y2="555" stroke="white" stroke-width="2" opacity="0.6"/>
-      <line x1="575" y1="555" x2="400" y2="450" stroke="white" stroke-width="2" opacity="0.6"/>
-      <line x1="400" y1="450" x2="225" y2="555" stroke="white" stroke-width="2" opacity="0.6"/>
-      <line x1="225" y1="555" x2="400" y2="660" stroke="white" stroke-width="2" opacity="0.6"/>
+      <!-- ── BASEPATHS ── -->
+      <line x1="400" y1="700" x2="555" y2="545" stroke="white" stroke-width="2.5" opacity="0.7"/>
+      <line x1="555" y1="545" x2="400" y2="390" stroke="white" stroke-width="2.5" opacity="0.7"/>
+      <line x1="400" y1="390" x2="245" y2="545" stroke="white" stroke-width="2.5" opacity="0.7"/>
+      <line x1="245" y1="545" x2="400" y2="700" stroke="white" stroke-width="2.5" opacity="0.7"/>
 
       <!-- ── PITCHER'S MOUND ── -->
-      <circle cx="400" cy="555" r="22" fill="#9B6843"/>
-      <circle cx="400" cy="555" r="22" fill="none" stroke="#7a5535" stroke-width="1.5"/>
-      <!-- Pitcher's rubber -->
-      <rect x="393" y="551" width="14" height="5" rx="2" fill="rgba(255,255,255,0.85)"/>
+      <circle cx="400" cy="545" r="24" fill="#9B6843"/>
+      <circle cx="400" cy="545" r="24" fill="none" stroke="#7a5535" stroke-width="1.5"/>
+      <rect x="393" y="541" width="14" height="5" rx="2" fill="rgba(255,255,255,0.85)"/>
 
       <!-- ── BASES ── -->
-      <!-- 1B (right) -->
-      <rect x="561" y="541" width="28" height="28" rx="2" fill="white" transform="rotate(45,575,555)"/>
-      <!-- 2B (top) -->
-      <rect x="386" y="436" width="28" height="28" rx="2" fill="white" transform="rotate(45,400,450)"/>
-      <!-- 3B (left) -->
-      <rect x="211" y="541" width="28" height="28" rx="2" fill="white" transform="rotate(45,225,555)"/>
+      <rect x="541" y="531" width="28" height="28" rx="2" fill="white" transform="rotate(45,555,545)"/>
+      <rect x="386" y="376" width="28" height="28" rx="2" fill="white" transform="rotate(45,400,390)"/>
+      <rect x="231" y="531" width="28" height="28" rx="2" fill="white" transform="rotate(45,245,545)"/>
 
-      <!-- ── HOME PLATE ── pentagon -->
-      <polygon points="400,676 422,660 422,640 378,640 378,660" fill="white"/>
-
-      <!-- Batter's boxes -->
-      <rect x="352" y="638" width="22" height="40" fill="none" stroke="rgba(255,255,255,0.5)" stroke-width="1.5"/>
-      <rect x="426" y="638" width="22" height="40" fill="none" stroke="rgba(255,255,255,0.5)" stroke-width="1.5"/>
-
-      <!-- Catcher's box -->
-      <rect x="366" y="676" width="68" height="30" fill="none" stroke="rgba(255,255,255,0.35)" stroke-width="1.2"/>
+      <!-- ── HOME PLATE ── -->
+      <polygon points="400,716 422,700 422,680 378,680 378,700" fill="white"/>
+      <rect x="348" y="676" width="24" height="42" fill="none" stroke="rgba(255,255,255,0.5)" stroke-width="1.5"/>
+      <rect x="428" y="676" width="24" height="42" fill="none" stroke="rgba(255,255,255,0.5)" stroke-width="1.5"/>
+      <rect x="364" y="716" width="72" height="28" fill="none" stroke="rgba(255,255,255,0.35)" stroke-width="1.2"/>
 
     </svg>
 
@@ -1086,55 +1082,55 @@
     <div class="field-overlay">
 
       <!-- Center Field: 50% x, 16% y -->
-      <div class="position-slot" id="slot-CF" style="left:50%;top:15%;">
+      <div class="position-slot" id="slot-CF" style="left:50%;top:32%;">
         <div class="position-label">Center Field</div>
         <select onchange="onDefenseChange('CF', this.value)"><option value="">— Unassigned —</option></select>
       </div>
 
       <!-- Left Field: 18% x, 31% y -->
-      <div class="position-slot" id="slot-LF" style="left:19%;top:30%;">
+      <div class="position-slot" id="slot-LF" style="left:14%;top:32%;">
         <div class="position-label">Left Field</div>
         <select onchange="onDefenseChange('LF', this.value)"><option value="">— Unassigned —</option></select>
       </div>
 
       <!-- Right Field: 82% x, 31% y -->
-      <div class="position-slot" id="slot-RF" style="left:81%;top:30%;">
+      <div class="position-slot" id="slot-RF" style="left:86%;top:32%;">
         <div class="position-label">Right Field</div>
         <select onchange="onDefenseChange('RF', this.value)"><option value="">— Unassigned —</option></select>
       </div>
 
       <!-- Shortstop: pushed further left -->
-      <div class="position-slot" id="slot-SS" style="left:24%;top:57%;">
+      <div class="position-slot" id="slot-SS" style="left:24%;top:52%;">
         <div class="position-label">Shortstop</div>
         <select onchange="onDefenseChange('SS', this.value)"><option value="">— Unassigned —</option></select>
       </div>
 
       <!-- Second Base: pushed further right -->
-      <div class="position-slot" id="slot-2B" style="left:76%;top:57%;">
+      <div class="position-slot" id="slot-2B" style="left:76%;top:52%;">
         <div class="position-label">2nd Base</div>
         <select onchange="onDefenseChange('2B', this.value)"><option value="">— Unassigned —</option></select>
       </div>
 
       <!-- Pitcher: on the mound -->
-      <div class="position-slot" id="slot-P" style="left:50%;top:73%;">
+      <div class="position-slot" id="slot-P" style="left:50%;top:70%;">
         <div class="position-label">Pitcher</div>
         <select onchange="onDefenseChange('P', this.value)"><option value="">— Unassigned —</option></select>
       </div>
 
       <!-- Third Base: pushed further left and down -->
-      <div class="position-slot" id="slot-3B" style="left:18%;top:86%;">
+      <div class="position-slot" id="slot-3B" style="left:18%;top:73%;">
         <div class="position-label">3rd Base</div>
         <select onchange="onDefenseChange('3B', this.value)"><option value="">— Unassigned —</option></select>
       </div>
 
       <!-- First Base: pushed further right and down -->
-      <div class="position-slot" id="slot-1B" style="left:82%;top:86%;">
+      <div class="position-slot" id="slot-1B" style="left:82%;top:73%;">
         <div class="position-label">1st Base</div>
         <select onchange="onDefenseChange('1B', this.value)"><option value="">— Unassigned —</option></select>
       </div>
 
       <!-- Catcher: nudged down to match -->
-      <div class="position-slot" id="slot-C" style="left:50%;top:96%;">
+      <div class="position-slot" id="slot-C" style="left:50%;top:94%;">
         <div class="position-label">Catcher</div>
         <select onchange="onDefenseChange('C', this.value)"><option value="">— Unassigned —</option></select>
       </div>
