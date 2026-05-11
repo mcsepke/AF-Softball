@@ -1239,6 +1239,7 @@
     <table class="inputs-table" id="inputs-table">
       <thead>
         <tr>
+          <th style="width:40px;text-align:center;">Out</th>
           <th>Player</th>
           <th>Pref Position</th>
           <th>Alt Position</th>
@@ -1266,21 +1267,21 @@
 // startPos values: a DEF_POSITIONS key ("3B","1B","P","C","SS","2B","LF","CF","RF"),
 //   or "Backup Pitcher", "Backup Catcher", "Bench"
 const players = [
-  { name: "Abigail B.",   pref: "3B", alt: "SS", bats: "R", startPos: "3B",             batOrder: 4  },
-  { name: "Aubrey L.",    pref: "1B", alt: "P",  bats: "R", startPos: "1B",             batOrder: 5,  pitchOrder: 2 },
-  { name: "Lilyana A.",   pref: "1B", alt: "P",  bats: "R", startPos: "Bench",          batOrder: 6,  pitchOrder: 4 },
-  { name: "Madelyn L.",   pref: "P",  alt: "1B", bats: "R", startPos: "Bench",          batOrder: 15, pitchOrder: 6 },
-  { name: "Genesis G.",   pref: "SS", alt: "OF", bats: "R", startPos: "Bench",          batOrder: 14 },
-  { name: "Ariella B.",   pref: "2B", alt: "OF", bats: "R", startPos: "LF",             batOrder: 7  },
-  { name: "Kenlee B.",    pref: "2B", alt: "P",  bats: "S", startPos: "2B",             batOrder: 2,  pitchOrder: 7 },
-  { name: "Raegan H.",    pref: "SS", alt: "OF", bats: "R", startPos: "SS",             batOrder: 1  },
-  { name: "Gabriella P.", pref: "1B", alt: "P",  bats: "R", startPos: "Backup Pitcher", batOrder: 9,  pitchOrder: 3 },
-  { name: "Kyra B.",      pref: "2B", alt: "P",  bats: "R", startPos: "Bench",          batOrder: 13, pitchOrder: 5 },
-  { name: "Cavana S.",    pref: "3B", alt: "OF", bats: "R", startPos: "RF",             batOrder: 10 },
-  { name: "Leighton G.",  pref: "C",  alt: "OF", bats: "R", startPos: "CF",             batOrder: 3  },
-  { name: "Kayla C.",     pref: "C",  alt: "3B", bats: "L", startPos: "Backup Catcher", batOrder: 11 },
-  { name: "Miah R.",      pref: "C",  alt: "1B", bats: "R", startPos: "C",              batOrder: 12 },
-  { name: "Monica B.",    pref: "2B", alt: "P",  bats: "R", startPos: "Bench",          batOrder: 8,  pitchOrder: 1 },
+  { name: "Abigail B.",   pref: "3B", alt: "SS", bats: "R", startPos: "3B",             batOrder: 4,  unavailable: false },
+  { name: "Aubrey L.",    pref: "1B", alt: "P",  bats: "R", startPos: "1B",             batOrder: 5,  unavailable: false, pitchOrder: 2 },
+  { name: "Lilyana A.",   pref: "1B", alt: "P",  bats: "R", startPos: "Bench",          batOrder: 6,  unavailable: false, pitchOrder: 4 },
+  { name: "Madelyn L.",   pref: "P",  alt: "1B", bats: "R", startPos: "Bench",          batOrder: 15, unavailable: false, pitchOrder: 6 },
+  { name: "Genesis G.",   pref: "SS", alt: "OF", bats: "R", startPos: "Bench",          batOrder: 14, unavailable: false },
+  { name: "Ariella B.",   pref: "2B", alt: "OF", bats: "R", startPos: "LF",             batOrder: 7,  unavailable: false },
+  { name: "Kenlee B.",    pref: "2B", alt: "P",  bats: "S", startPos: "2B",             batOrder: 2,  unavailable: false, pitchOrder: 7 },
+  { name: "Raegan H.",    pref: "SS", alt: "OF", bats: "R", startPos: "SS",             batOrder: 1,  unavailable: false },
+  { name: "Gabriella P.", pref: "1B", alt: "P",  bats: "R", startPos: "Backup Pitcher", batOrder: 9,  unavailable: false, pitchOrder: 3 },
+  { name: "Kyra B.",      pref: "2B", alt: "P",  bats: "R", startPos: "Bench",          batOrder: 13, unavailable: false, pitchOrder: 5 },
+  { name: "Cavana S.",    pref: "3B", alt: "OF", bats: "R", startPos: "RF",             batOrder: 10, unavailable: false },
+  { name: "Leighton G.",  pref: "C",  alt: "OF", bats: "R", startPos: "CF",             batOrder: 3,  unavailable: false },
+  { name: "Kayla C.",     pref: "C",  alt: "3B", bats: "L", startPos: "Backup Catcher", batOrder: 11, unavailable: false },
+  { name: "Miah R.",      pref: "C",  alt: "1B", bats: "R", startPos: "C",              batOrder: 12, unavailable: false },
+  { name: "Monica B.",    pref: "2B", alt: "P",  bats: "R", startPos: "Bench",          batOrder: 8,  unavailable: false, pitchOrder: 1 },
 ];
 
 // Defensive positions and which "OF" position they map to
@@ -1331,7 +1332,7 @@ function buildDefenseDropdowns() {
     const slot = document.querySelector(`#slot-${pos.key} select`);
     if (!slot) return;
     rebuildSlotOptions(slot, pos.key);
-    slot.value = defenseAssignments[pos.key] || "";
+    // rebuildSlotOptions already sets .value and .className correctly
   });
 }
 
@@ -1360,26 +1361,43 @@ function rebuildSlotOptions(select, slotKey) {
   const others      = [];
   const assignedRed = [];
 
+  // Short label for each slot shown next to name when already assigned
+  const SLOT_ABBR = {
+    "1B":"1st", "2B":"2nd", "3B":"3rd",
+    SS:"SS", LF:"LF", CF:"CF", RF:"RF",
+    C:"C", P:"P"
+  };
+
+  function optionText(p) {
+    const slot = assignedElsewhere[p.name];
+    return slot ? `${p.name} · ${SLOT_ABBR[slot] || slot}` : p.name;
+  }
+
   // ── PITCHER SLOT: flat alphabetical, red if assigned elsewhere ──
   if (isPitcherSlot) {
     players
-      .filter(p => p.pref === "P" || p.alt === "P")
+      .filter(p => (p.pref === "P" || p.alt === "P") && !p.unavailable)
       .sort((a, b) => a.name.localeCompare(b.name))
       .forEach(p => {
         const o = document.createElement("option");
         o.value = p.name;
-        o.textContent = p.name;
+        o.textContent = optionText(p);
         o.style.color = assignedElsewhere[p.name] ? "#e8304a" : "#f0f4ff";
         select.appendChild(o);
       });
     const assignedVal = defenseAssignments[slotKey] || "";
     select.value = assignedVal;
+    if (assignedVal && select.value !== assignedVal) {
+      defenseAssignments[slotKey] = "";
+      select.value = "";
+    }
     select.className = select.value ? "assigned" : "";
     return;
   }
 
   // ── All other slots: preferred → alternate → others → assigned-elsewhere ──
   players.forEach(p => {
+    if (p.unavailable) return;
     if (isCatcherSlot && p.pref !== "C" && p.alt !== "C") return;
 
     let isPref, isAlt;
@@ -1408,7 +1426,7 @@ function rebuildSlotOptions(select, slotKey) {
   [...preferred, ...alternates, ...others].forEach(p => {
     const o = document.createElement("option");
     o.value = p.name;
-    o.textContent = p.name;
+    o.textContent = optionText(p);
     o.style.color = "#f0f4ff";
     select.appendChild(o);
   });
@@ -1416,13 +1434,18 @@ function rebuildSlotOptions(select, slotKey) {
   assignedRed.forEach(p => {
     const o = document.createElement("option");
     o.value = p.name;
-    o.textContent = p.name;
+    o.textContent = optionText(p);
     o.style.color = "#e8304a";
     select.appendChild(o);
   });
 
   const assignedVal = defenseAssignments[slotKey] || "";
   select.value = assignedVal;
+  // If the value didn't stick (player removed from options), clear the assignment
+  if (assignedVal && select.value !== assignedVal) {
+    defenseAssignments[slotKey] = "";
+    select.value = "";
+  }
   select.className = select.value ? "assigned" : "";
 }
 
@@ -1545,7 +1568,7 @@ function buildStatusPanel() {
     noneOpt.style.color = "#e8304a";
     bpSel.appendChild(noneOpt);
     players
-      .filter(p => (p.pref === "P" || p.alt === "P") && p.name !== starterP)
+      .filter(p => (p.pref === "P" || p.alt === "P") && p.name !== starterP && !p.unavailable)
       .sort((a, b) => a.name.localeCompare(b.name))
       .forEach(p => {
         const o = document.createElement("option");
@@ -1568,7 +1591,7 @@ function buildStatusPanel() {
     noneOpt2.style.color = "#e8304a";
     bcSel.appendChild(noneOpt2);
     players
-      .filter(p => (p.pref === "C" || p.alt === "C") && p.name !== starterC)
+      .filter(p => (p.pref === "C" || p.alt === "C") && p.name !== starterC && !p.unavailable)
       .sort((a, b) => a.name.localeCompare(b.name))
       .forEach(p => {
         const o = document.createElement("option");
@@ -1583,6 +1606,7 @@ function buildStatusPanel() {
 
   // ── Bench: everyone not on the field, not backup P/C ──────
   const benchPlayers = players.filter(p =>
+    !p.unavailable &&
     !onField.has(p.name) &&
     p.name !== backupAssignments.P &&
     p.name !== backupAssignments.C
@@ -2296,6 +2320,18 @@ function buildInputsTable() {
   players.forEach((p, idx) => {
     const tr = document.createElement("tr");
     tr.dataset.playerIdx = idx;
+    if (p.unavailable) tr.style.opacity = "0.5";
+
+    const cbTd = document.createElement("td");
+    cbTd.style.textAlign = "center";
+    cbTd.style.paddingLeft = "14px";
+    const cb = document.createElement("input");
+    cb.type = "checkbox";
+    cb.checked = p.unavailable || false;
+    cb.title = "Mark as unavailable";
+    cb.style.cssText = "width:16px;height:16px;accent-color:#e8304a;cursor:pointer;";
+    cb.addEventListener("change", () => onUnavailableChange(idx, cb.checked));
+    cbTd.appendChild(cb);
 
     const nameTd = document.createElement("td");
     nameTd.className = "player-name-cell";
@@ -2320,9 +2356,85 @@ function buildInputsTable() {
     batInput.dataset.field = "batOrder";
     batTd.appendChild(batInput);
 
-    tr.append(nameTd, prefTd, altTd, startTd, batTd);
+    tr.append(cbTd, nameTd, prefTd, altTd, startTd, batTd);
     tbody.appendChild(tr);
   });
+}
+
+// Map OF alt to specific field slots for replacement logic
+const OF_FIELD_SLOTS = ["LF", "CF", "RF"];
+
+function onUnavailableChange(idx, isUnavailable) {
+  const p = players[idx];
+  p.unavailable = isUnavailable;
+
+  if (isUnavailable) {
+    // Remove from all field defense slots
+    DEF_POSITIONS.forEach(pos => {
+      if (defenseAssignments[pos.key] === p.name) {
+        // Find a replacement: available primary first, then alternate
+        const replacement = findReplacement(pos.key, p.name);
+        defenseAssignments[pos.key] = replacement;
+      }
+    });
+    // Clear from backup slots
+    if (backupAssignments.P === p.name) backupAssignments.P = "";
+    if (backupAssignments.C === p.name) backupAssignments.C = "";
+    // Remove from batting order
+    battingOrder = battingOrder.filter(e =>
+      e.playerName !== p.name &&
+      e.flexName !== p.name &&
+      e.epPlayerName !== p.name
+    );
+    // Pad back to 9 if needed
+    while (battingOrder.filter(e => e.playerName !== PITCHER_PLACEHOLDER).length < 9) {
+      const hasP = battingOrder.some(e => e.playerName === PITCHER_PLACEHOLDER);
+      battingOrder.push({
+        id: "placeholder-" + Date.now() + Math.random(),
+        playerName: !hasP && !defenseAssignments["P"] ? PITCHER_PLACEHOLDER : "",
+        role: "Regular", flexName: "", manuallyMoved: false
+      });
+    }
+  } else {
+    // Player back — restore their default slot if still empty
+    const slotKey = FIELD_SLOTS.has(p.startPos) ? p.startPos : null;
+    if (slotKey && !defenseAssignments[slotKey]) {
+      defenseAssignments[slotKey] = p.name;
+    }
+    if (p.startPos === "Backup Pitcher" && !backupAssignments.P) backupAssignments.P = p.name;
+    if (p.startPos === "Backup Catcher" && !backupAssignments.C) backupAssignments.C = p.name;
+  }
+
+  // Rebuild all UI
+  DEF_POSITIONS.forEach(pos => {
+    const slot = document.querySelector(`#slot-${pos.key} select`);
+    if (slot) rebuildSlotOptions(slot, pos.key);
+  });
+  checkConflicts();
+  buildStatusPanel();
+  syncBattingOrderToDefense();
+  buildInputsTable(); // re-render to apply opacity
+  saveState();
+}
+
+function findReplacement(slotKey, excludeName) {
+  const available = players.filter(p => !p.unavailable && p.name !== excludeName);
+  const isOF = OF_FIELD_SLOTS.includes(slotKey);
+  const alreadyUsed = new Set(Object.values(defenseAssignments).filter(Boolean));
+  alreadyUsed.delete(excludeName); // the vacated slot doesn't count
+
+  // 1. Primary preference match
+  let pick = available.find(p => {
+    if (alreadyUsed.has(p.name)) return false;
+    return isOF ? (p.pref === "OF") : (p.pref === slotKey);
+  });
+  // 2. Alternate match
+  if (!pick) pick = available.find(p => {
+    if (alreadyUsed.has(p.name)) return false;
+    return isOF ? (p.alt === "OF") : (p.alt === slotKey);
+  });
+  // 3. Leave unassigned
+  return pick ? pick.name : "";
 }
 
 function buildPosSelect(field, currentVal, options, playerIdx) {
@@ -2430,7 +2542,7 @@ function resetInputsToDefault() {
     { pref:"C",  alt:"1B",  startPos:"C",              batOrder:12 },
     { pref:"2B", alt:"P",   startPos:"Bench",          batOrder:8  },
   ];
-  players.forEach((p, i) => Object.assign(p, defaults[i]));
+  players.forEach((p, i) => Object.assign(p, defaults[i], { unavailable: false }));
   battingOrder.forEach(e => { e.manuallyMoved = false; });
   buildInputsTable();
   // Fully reset defense and batting order
@@ -2457,7 +2569,7 @@ function saveState() {
     const state = {
       players: players.map(p => ({
         name: p.name, pref: p.pref, alt: p.alt, bats: p.bats,
-        startPos: p.startPos, batOrder: p.batOrder
+        startPos: p.startPos, batOrder: p.batOrder, unavailable: p.unavailable || false
       })),
       defenseAssignments: { ...defenseAssignments },
       backupAssignments:  { ...backupAssignments },
@@ -2476,11 +2588,11 @@ function loadState() {
 
     if (state.players && state.players.length === players.length) {
       state.players.forEach((sp, i) => {
-        players[i].pref     = sp.pref     ?? players[i].pref;
-        players[i].alt      = sp.alt      ?? players[i].alt;
-        players[i].startPos = sp.startPos ?? players[i].startPos;
-        players[i].batOrder = sp.batOrder ?? players[i].batOrder;
-        // pitchOrder always comes from hardcoded data, never overwritten by cache
+        players[i].pref        = sp.pref        ?? players[i].pref;
+        players[i].alt         = sp.alt         ?? players[i].alt;
+        players[i].startPos    = sp.startPos    ?? players[i].startPos;
+        players[i].batOrder    = sp.batOrder    ?? players[i].batOrder;
+        players[i].unavailable = sp.unavailable ?? false;
       });
     }
     if (state.defenseAssignments) Object.assign(defenseAssignments, state.defenseAssignments);
