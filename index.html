@@ -1098,55 +1098,55 @@
       <!-- Center Field: 50% x, 16% y -->
       <div class="position-slot" id="slot-CF" style="left:50%;top:15%;">
         <div class="position-label">Center Field</div>
-        <select onchange="expandSlotOptions('CF', this.value)"><option value="">— Unassigned —</option></select>
+        <select onchange="onDefenseChange('CF', this.value)"><option value="">— Unassigned —</option></select>
       </div>
 
       <!-- Left Field: 18% x, 31% y -->
       <div class="position-slot" id="slot-LF" style="left:19%;top:30%;">
         <div class="position-label">Left Field</div>
-        <select onchange="expandSlotOptions('LF', this.value)"><option value="">— Unassigned —</option></select>
+        <select onchange="onDefenseChange('LF', this.value)"><option value="">— Unassigned —</option></select>
       </div>
 
       <!-- Right Field: 82% x, 31% y -->
       <div class="position-slot" id="slot-RF" style="left:81%;top:30%;">
         <div class="position-label">Right Field</div>
-        <select onchange="expandSlotOptions('RF', this.value)"><option value="">— Unassigned —</option></select>
+        <select onchange="onDefenseChange('RF', this.value)"><option value="">— Unassigned —</option></select>
       </div>
 
       <!-- Shortstop: pushed further left -->
       <div class="position-slot" id="slot-SS" style="left:24%;top:57%;">
         <div class="position-label">Shortstop</div>
-        <select onchange="expandSlotOptions('SS', this.value)"><option value="">— Unassigned —</option></select>
+        <select onchange="onDefenseChange('SS', this.value)"><option value="">— Unassigned —</option></select>
       </div>
 
       <!-- Second Base: pushed further right -->
       <div class="position-slot" id="slot-2B" style="left:76%;top:57%;">
         <div class="position-label">2nd Base</div>
-        <select onchange="expandSlotOptions('2B', this.value)"><option value="">— Unassigned —</option></select>
+        <select onchange="onDefenseChange('2B', this.value)"><option value="">— Unassigned —</option></select>
       </div>
 
       <!-- Pitcher: on the mound -->
       <div class="position-slot" id="slot-P" style="left:50%;top:73%;">
         <div class="position-label">Pitcher</div>
-        <select onchange="expandSlotOptions('P', this.value)"><option value="">— Unassigned —</option></select>
+        <select onchange="onDefenseChange('P', this.value)"><option value="">— Unassigned —</option></select>
       </div>
 
       <!-- Third Base: pushed further left and down -->
       <div class="position-slot" id="slot-3B" style="left:18%;top:86%;">
         <div class="position-label">3rd Base</div>
-        <select onchange="expandSlotOptions('3B', this.value)"><option value="">— Unassigned —</option></select>
+        <select onchange="onDefenseChange('3B', this.value)"><option value="">— Unassigned —</option></select>
       </div>
 
       <!-- First Base: pushed further right and down -->
       <div class="position-slot" id="slot-1B" style="left:82%;top:86%;">
         <div class="position-label">1st Base</div>
-        <select onchange="expandSlotOptions('1B', this.value)"><option value="">— Unassigned —</option></select>
+        <select onchange="onDefenseChange('1B', this.value)"><option value="">— Unassigned —</option></select>
       </div>
 
       <!-- Catcher: nudged down to match -->
       <div class="position-slot" id="slot-C" style="left:50%;top:96%;">
         <div class="position-label">Catcher</div>
-        <select onchange="expandSlotOptions('C', this.value)"><option value="">— Unassigned —</option></select>
+        <select onchange="onDefenseChange('C', this.value)"><option value="">— Unassigned —</option></select>
       </div>
 
     </div><!-- /field-overlay -->
@@ -1369,27 +1369,21 @@ function rebuildSlotOptions(select, slotKey) {
     return slot ? `${p.name} · ${SLOT_ABBR[slot] || slot}` : p.name;
   }
 
-  const slot       = select.closest(".position-slot");
-  const isExpanded = slot && slot.dataset.expanded === "1";
-
   // ── PITCHER SLOT: flat alphabetical ──────────────────────
   if (isPitcherSlot) {
     players
       .filter(p => (p.pref === "P" || p.alt === "P") && !p.unavailable)
       .sort((a, b) => a.name.localeCompare(b.name))
       .forEach(p => {
-        const isRed = !!assignedElsewhere[p.name];
-        if (isRed && !isExpanded) return; // hide until expanded
         const o = document.createElement("option");
         o.value = p.name;
         o.textContent = optionText(p);
-        o.style.color = isRed ? "#e8304a" : "#f0f4ff";
-        if (isRed) o.dataset.assignedOption = "1";
+        o.style.color = assignedElsewhere[p.name] ? "#e8304a" : "#f0f4ff";
         select.appendChild(o);
       });
 
   } else {
-    // ── All other slots ───────────────────────────────────
+    // ── All other slots: preferred → alternate → others → assigned-elsewhere ──
     players.forEach(p => {
       if (p.unavailable) return;
       if (isCatcherSlot && p.pref !== "C" && p.alt !== "C") return;
@@ -1420,25 +1414,13 @@ function rebuildSlotOptions(select, slotKey) {
       select.appendChild(o);
     });
 
-    if (!isExpanded && assignedRed.length > 0) {
-      // Add sentinel "More" option at the bottom
-      const more = document.createElement("option");
-      more.value = "__MORE__";
-      more.textContent = `▼  More (${assignedRed.length} assigned)`;
-      more.style.color = "#8fa4cc";
-      more.style.fontStyle = "italic";
-      select.appendChild(more);
-    } else {
-      // Expanded — show all assigned-elsewhere players
-      assignedRed.forEach(p => {
-        const o = document.createElement("option");
-        o.value = p.name;
-        o.textContent = optionText(p);
-        o.style.color = "#e8304a";
-        o.dataset.assignedOption = "1";
-        select.appendChild(o);
-      });
-    }
+    assignedRed.forEach(p => {
+      const o = document.createElement("option");
+      o.value = p.name;
+      o.textContent = optionText(p);
+      o.style.color = "#e8304a";
+      select.appendChild(o);
+    });
   }
 
   // Restore assignment value
@@ -1448,26 +1430,7 @@ function rebuildSlotOptions(select, slotKey) {
     defenseAssignments[slotKey] = "";
     select.value = "";
   }
-
   select.className = select.value ? "assigned" : "";
-}
-
-// Called from onchange — intercepts the __MORE__ sentinel
-function expandSlotOptions(slotKey, value) {
-  if (value === "__MORE__") {
-    const slot = document.querySelector(`#slot-${slotKey}`);
-    if (slot) slot.dataset.expanded = "1";
-    const sel = document.querySelector(`#slot-${slotKey} select`);
-    if (sel) {
-      rebuildSlotOptions(sel, slotKey);
-      sel.focus();
-    }
-    return;
-  }
-  // Real selection — collapse expanded state and process the change
-  const slot = document.querySelector(`#slot-${slotKey}`);
-  if (slot) slot.dataset.expanded = "0";
-  onDefenseChange(slotKey, value);
 }
 
 function onDefenseChange(slotKey, playerName) {
