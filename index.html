@@ -601,7 +601,7 @@
     font-family: 'DM Sans', sans-serif;
     font-size: 0.85rem;
     padding: 7px 12px;
-    width: 180px;
+    width: 130px;
     transition: border-color 0.2s;
   }
   .opponent-input:focus {
@@ -958,8 +958,7 @@
     <button class="btn btn-edit" onclick="editLineup()" style="display:none;">✏️ Edit</button>
     <button class="btn btn-groupme" onclick="shareLineup()" style="display:none;">📤 Share Lineup</button>
     <div class="opponent-field">
-      <label class="opponent-label" for="opponent-input">vs.</label>
-      <input id="opponent-input" class="opponent-input" type="text" placeholder="Opponent team name"
+      <input id="opponent-input" class="opponent-input" type="text" placeholder="Opponent"
              oninput="syncOpponent(this.value)" autocomplete="off">
     </div>
   </div>
@@ -1205,8 +1204,7 @@
     <button class="btn btn-edit" onclick="editLineup()" style="display:none;">✏️ Edit</button>
     <button class="btn btn-groupme" onclick="shareLineup()" style="display:none;">📤 Share Lineup</button>
     <div class="opponent-field">
-      <label class="opponent-label" for="opponent-input-offense">vs.</label>
-      <input id="opponent-input-offense" class="opponent-input" type="text" placeholder="Opponent team name"
+      <input id="opponent-input-offense" class="opponent-input" type="text" placeholder="Opponent"
              oninput="syncOpponent(this.value)" autocomplete="off">
     </div>
   </div>
