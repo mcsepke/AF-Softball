@@ -3,24 +3,27 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Softball Lineup Manager</title>
+<title>American Freedom Softball</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #0d1117;
-    --surface: #161b22;
-    --surface2: #1e2530;
-    --surface3: #252d38;
-    --border: #2d3748;
-    --accent: #f5a623;
-    --accent2: #e8572a;
+    --bg: #0a0e1a;
+    --surface: #0f1625;
+    --surface2: #162035;
+    --surface3: #1c2840;
+    --border: #243050;
+    --accent: #b22234;
+    --accent2: #cc2a3f;
     --green: #3fb950;
-    --blue: #58a6ff;
+    --blue: #3c6fd4;
+    --blue-bright: #5b8ee8;
     --purple: #bc8cff;
-    --text: #e6edf3;
-    --text2: #8b949e;
-    --text3: #6e7681;
-    --red: #f85149;
+    --text: #f0f4ff;
+    --text2: #8fa4cc;
+    --text3: #5c7299;
+    --red: #b22234;
+    --red-bright: #e8304a;
+    --white: #f5f5f5;
     --radius: 8px;
   }
 
@@ -35,8 +38,8 @@
 
   /* HEADER */
   header {
-    background: linear-gradient(135deg, #1a0a00 0%, #2d1200 50%, #1a0a00 100%);
-    border-bottom: 2px solid var(--accent);
+    background: linear-gradient(135deg, #0a0e1a 0%, #162035 40%, #0f1a2e 100%);
+    border-bottom: 3px solid var(--accent);
     padding: 0 24px;
     display: flex;
     align-items: center;
@@ -53,9 +56,20 @@
       -45deg,
       transparent,
       transparent 20px,
-      rgba(245,166,35,0.03) 20px,
-      rgba(245,166,35,0.03) 40px
+      rgba(178,34,52,0.04) 20px,
+      rgba(178,34,52,0.04) 40px
     );
+  }
+  /* Stars stripe accent */
+  header::after {
+    content: '★ ★ ★ ★ ★';
+    position: absolute;
+    right: 20px;
+    bottom: 4px;
+    font-size: 0.5rem;
+    letter-spacing: 6px;
+    color: rgba(255,255,255,0.1);
+    pointer-events: none;
   }
   .header-left {
     display: flex;
@@ -71,18 +85,18 @@
   }
   .app-title {
     font-family: 'Bebas Neue', sans-serif;
-    font-size: 2rem;
+    font-size: 1.7rem;
     letter-spacing: 3px;
-    color: var(--accent);
+    color: var(--white);
     line-height: 1;
-    text-shadow: 0 0 30px rgba(245,166,35,0.4);
+    text-shadow: 0 0 30px rgba(178,34,52,0.6), 0 2px 4px rgba(0,0,0,0.8);
   }
   .app-subtitle {
-    font-size: 0.7rem;
-    color: var(--text2);
+    font-size: 0.65rem;
+    color: var(--blue-bright);
     letter-spacing: 4px;
     text-transform: uppercase;
-    margin-top: 2px;
+    margin-top: 3px;
   }
 
   /* TABS */
@@ -107,7 +121,7 @@
   }
   .tab-btn:hover { color: var(--text); background: rgba(255,255,255,0.05); }
   .tab-btn.active {
-    color: var(--accent);
+    color: var(--white);
     background: var(--bg);
     border: 2px solid var(--accent);
     border-bottom: 2px solid var(--bg);
@@ -128,7 +142,7 @@
     font-family: 'Bebas Neue', sans-serif;
     font-size: 1.4rem;
     letter-spacing: 3px;
-    color: var(--accent);
+    color: var(--white);
     margin-bottom: 16px;
     display: flex;
     align-items: center;
@@ -137,7 +151,7 @@
   .section-title::after {
     content: '';
     flex: 1;
-    height: 1px;
+    height: 2px;
     background: linear-gradient(to right, var(--accent), transparent);
   }
 
@@ -184,14 +198,14 @@
     backdrop-filter: blur(2px);
   }
   .position-slot select {
-    width: 148px;
+    width: 130px;
     background: rgba(10,16,10,0.82);
     border: 1px solid var(--border);
     border-radius: var(--radius);
     color: var(--text);
     font-family: 'DM Sans', sans-serif;
-    font-size: 0.78rem;
-    padding: 5px 26px 5px 8px;
+    font-size: 0.75rem;
+    padding: 5px 22px 5px 7px;
     appearance: none;
     -webkit-appearance: none;
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%238b949e'/%3E%3C/svg%3E");
@@ -211,10 +225,7 @@
     border-color: var(--green);
     color: #fff;
   }
-  .position-slot select option.preferred      { color: var(--accent); }
-  .position-slot select option.alternate      { color: var(--blue);   }
-  .position-slot select option.other          { color: var(--text2);  }
-  .position-slot select option.already-assigned { color: var(--red); font-style: italic; }
+  .position-slot select option.already-assigned { color: #e8304a; }
 
   /* DP/FLEX indicator */
   .bat-hand-badge {
@@ -224,8 +235,8 @@
     font-weight: 700;
     letter-spacing: 1px;
   }
-  .bat-R { background: rgba(245,166,35,0.2); color: var(--accent); }
-  .bat-L { background: rgba(88,166,255,0.2); color: var(--blue); }
+  .bat-R { background: rgba(178,34,52,0.2); color: #e8304a; }
+  .bat-L { background: rgba(60,111,212,0.25); color: var(--blue-bright); }
   .bat-S { background: rgba(188,140,255,0.2); color: var(--purple); }
 
   /* OFFENSIVE LINEUP */
@@ -268,7 +279,7 @@
     cursor: grabbing;
   }
   .lineup-row.drag-over {
-    background: rgba(245,166,35,0.08);
+    background: rgba(178,34,52,0.08);
     border-top: 2px solid var(--accent);
   }
 
@@ -281,7 +292,7 @@
 
   .dp-sub-label {
     font-size: 0.68rem;
-    color: var(--green);
+    color: var(--blue-bright);
     font-weight: 600;
     letter-spacing: 0.3px;
     margin-top: 1px;
@@ -297,9 +308,9 @@
     letter-spacing: 0.5px;
   }
   .pos-badge-field {
-    background: rgba(63,185,80,0.12);
-    color: var(--green);
-    border: 1px solid rgba(63,185,80,0.25);
+    background: rgba(60,111,212,0.18);
+    color: var(--blue-bright);
+    border: 1px solid rgba(60,111,212,0.35);
   }
   .pos-badge-ep {
     background: rgba(188,140,255,0.12);
@@ -330,6 +341,58 @@
     height: 2px;
     background: var(--text2);
     border-radius: 1px;
+  }
+
+  .player-name-row {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    flex-wrap: nowrap;
+    overflow: hidden;
+  }
+  .inline-role-tag {
+    font-size: 0.58rem;
+    font-weight: 800;
+    padding: 1px 5px;
+    border-radius: 3px;
+    white-space: nowrap;
+    flex-shrink: 0;
+    letter-spacing: 0.5px;
+  }
+  .inline-flex-tag { background: rgba(240,244,255,0.1); color: var(--text); border: 1px solid rgba(240,244,255,0.2); }
+  .inline-dp-tag   { background: rgba(178,34,52,0.2); color: #e8304a; border: 1px solid rgba(178,34,52,0.4); }
+
+  /* DP horizontal two-name layout */
+  .dp-name-row {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    flex-wrap: nowrap;
+    overflow: hidden;
+  }
+  .dp-pair-flex {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex-shrink: 1;
+    min-width: 0;
+    overflow: hidden;
+  }
+  .dp-pair-sep {
+    color: var(--text3);
+    font-size: 0.8rem;
+    flex-shrink: 0;
+  }
+  .dp-pair-dp {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex-shrink: 1;
+    min-width: 0;
+    overflow: hidden;
+  }
+  .dp-name-red {
+    color: #e8304a !important;
   }
 
   .player-info {
@@ -381,11 +444,11 @@
   }
   .lineup-select:focus {
     outline: none;
-    border-color: var(--accent);
+    border-color: var(--blue-bright);
   }
-  .lineup-select.dp-select { border-color: var(--green); }
+  .lineup-select.dp-select { border-color: var(--blue-bright); }
   .lineup-select.ep-select { border-color: var(--purple); }
-  .lineup-select.flex-select { border-color: var(--blue); }
+  .lineup-select.flex-select { border-color: var(--red-bright); }
 
   .bat-hand-cell {
     display: flex;
@@ -399,18 +462,19 @@
     justify-content: center;
     gap: 8px;
     width: 100%;
-    padding: 12px;
-    background: transparent;
-    border: 1px dashed var(--border);
-    border-top: none;
+    padding: 13px;
+    background: #e8572a;
+    border: none;
     border-radius: 0 0 12px 12px;
-    color: var(--text3);
+    color: #fff;
     font-family: 'DM Sans', sans-serif;
-    font-size: 0.82rem;
+    font-size: 0.88rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
     cursor: pointer;
     transition: all 0.2s;
   }
-  .add-spot-btn:hover { background: var(--surface2); color: var(--accent); border-color: var(--accent); }
+  .add-spot-btn:hover { background: #c94420; }
 
   /* LEGEND */
   .legend {
@@ -501,15 +565,15 @@
   }
   .btn-primary {
     background: var(--accent);
-    color: #000;
+    color: #fff;
   }
-  .btn-primary:hover { background: #e09400; }
+  .btn-primary:hover { background: #8f1a27; }
   .btn-ghost {
     background: var(--surface2);
     color: var(--text);
     border: 1px solid var(--border);
   }
-  .btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
+  .btn-ghost:hover { border-color: var(--blue-bright); color: var(--blue-bright); }
 
   /* ── DEFENSE LAYOUT ─────────────────────────────────────── */
   .defense-layout {
@@ -664,13 +728,22 @@
   }
   .saved-pos-text {
     font-size: 0.68rem;
-    color: var(--green);
+    color: var(--blue-bright);
     font-weight: 600;
+    margin-top: 1px;
+  }
+  .saved-dp-line {
+    font-size: 0.72rem;
+    color: var(--blue-bright);
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 5px;
     margin-top: 1px;
   }
   .saved-dp-name {
     font-size: 0.72rem;
-    color: var(--green);
+    color: var(--blue-bright);
     font-weight: 500;
     white-space: nowrap;
   }
@@ -683,28 +756,30 @@
     flex-shrink: 0;
     letter-spacing: 0.5px;
   }
-  .saved-role-dp { background: rgba(63,185,80,0.15); color: var(--green); border: 1px solid rgba(63,185,80,0.3); }
-  .saved-role-ep { background: rgba(188,140,255,0.15); color: var(--purple); border: 1px solid rgba(188,140,255,0.3); }
+  .saved-role-dp   { background: rgba(178,34,52,0.2); color: #e8304a; border: 1px solid rgba(178,34,52,0.4); }
+  .saved-role-ep   { background: rgba(188,140,255,0.15); color: var(--purple); border: 1px solid rgba(188,140,255,0.3); }
+  .saved-role-flex { background: rgba(240,244,255,0.1); color: var(--text); border: 1px solid rgba(240,244,255,0.2); }
 
   .btn-save {
-    background: var(--green);
-    color: #000;
-    font-weight: 700;
-  }
-  .btn-save:hover { background: #35a344; }
-  .btn-edit {
     background: var(--blue);
-    color: #000;
-    font-weight: 700;
-  }
-  .btn-edit:hover { background: #4090e0; }
-
-  .btn-send {
-    background: #e8572a;
     color: #fff;
     font-weight: 700;
   }
-  .btn-send:hover { background: #c94420; }
+  .btn-save:hover { background: #2d55a8; }
+  .btn-edit {
+    background: var(--surface2);
+    color: var(--blue-bright);
+    font-weight: 700;
+    border: 1px solid var(--blue-bright);
+  }
+  .btn-edit:hover { background: var(--blue); color: #fff; border-color: var(--blue); }
+
+  .btn-send {
+    background: var(--accent);
+    color: #fff;
+    font-weight: 700;
+  }
+  .btn-send:hover { background: #8f1a27; }
 
   /* Hide legend, drag handles, and reset button in saved mode */
   body.saved-mode .legend { display: none; }
@@ -714,6 +789,81 @@
   body.saved-mode .add-spot-btn { display: none; }
   body.saved-mode .lineup-row { cursor: default; }
   body.saved-mode .bat-order-num { color: var(--accent); }
+
+  /* ── INPUTS TAB ─────────────────────────────────────────── */
+  .inputs-table-wrap {
+    overflow-x: auto;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+  }
+  .inputs-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+    min-width: 580px;
+  }
+  .inputs-table thead tr {
+    background: var(--surface2);
+  }
+  .inputs-table th {
+    padding: 10px 14px;
+    text-align: left;
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--text3);
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+  }
+  .inputs-table td {
+    padding: 7px 10px;
+    border-bottom: 1px solid rgba(36,48,80,0.6);
+    vertical-align: middle;
+  }
+  .inputs-table tbody tr:last-child td { border-bottom: none; }
+  .inputs-table tbody tr:hover { background: var(--surface2); }
+  .inputs-table .player-name-cell {
+    font-weight: 600;
+    color: var(--text);
+    white-space: nowrap;
+    padding-left: 14px;
+  }
+  .inputs-table select,
+  .inputs-table input[type="number"] {
+    background: var(--surface3);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.78rem;
+    padding: 5px 8px;
+    width: 100%;
+    cursor: pointer;
+    transition: border-color 0.2s;
+    appearance: none;
+    -webkit-appearance: none;
+  }
+  .inputs-table select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='5'%3E%3Cpath d='M0 0l4 5 4-5z' fill='%238fa4cc'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 8px center;
+    padding-right: 24px;
+  }
+  .inputs-table select:focus,
+  .inputs-table input[type="number"]:focus {
+    outline: none;
+    border-color: var(--blue-bright);
+    box-shadow: 0 0 0 2px rgba(91,142,232,0.15);
+  }
+  .col-bat-order { width: 80px; }
+  .inputs-table input[type="number"] {
+    width: 60px;
+    text-align: center;
+    -moz-appearance: textfield;
+  }
+  .inputs-table input[type="number"]::-webkit-outer-spin-button,
+  .inputs-table input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; }
 
   @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
   .tab-panel.active { animation: fadeIn 0.25s ease; }
@@ -735,13 +885,14 @@
       <path d="M18 38 Q22 34 30 38" stroke="#e8572a" stroke-width="1.8" fill="none" stroke-linecap="round"/>
     </svg>
     <div>
-      <div class="app-title">Lineup Manager</div>
-      <div class="app-subtitle">Softball · Field & Batting</div>
+      <div class="app-title">American Freedom Softball</div>
+      <div class="app-subtitle">★ Lineup Card ★</div>
     </div>
   </div>
   <div class="tabs">
-    <button class="tab-btn active" onclick="switchTab('defense')">⚾ Defense</button>
-    <button class="tab-btn" onclick="switchTab('offense')">🥎 Offense</button>
+    <button class="tab-btn active" onclick="switchTab('defense', event)">⚾ Defense</button>
+    <button class="tab-btn" onclick="switchTab('offense', event)">🥎 Offense</button>
+    <button class="tab-btn" onclick="switchTab('inputs', event)">⚙️ Inputs</button>
   </div>
 </header>
 
@@ -759,12 +910,6 @@
   </div>
 
   <div class="section-title">Defensive Positions</div>
-
-  <div class="legend">
-    <div class="legend-item"><div class="legend-dot" style="background:var(--accent)"></div> Preferred Position</div>
-    <div class="legend-item"><div class="legend-dot" style="background:var(--blue)"></div> Alternate Position</div>
-    <div class="legend-item"><div class="legend-dot" style="background:var(--text3)"></div> Other Players</div>
-  </div>
 
   <!-- Field + Status side-by-side -->
   <div class="defense-layout">
@@ -911,38 +1056,38 @@
         <select onchange="onDefenseChange('RF', this.value)"><option value="">— Unassigned —</option></select>
       </div>
 
-      <!-- Shortstop: 34% x, 52% y (between 3B and 2B, slightly toward LF) -->
-      <div class="position-slot" id="slot-SS" style="left:34%;top:51%;">
+      <!-- Shortstop: moved left and slightly lower to clear 2B -->
+      <div class="position-slot" id="slot-SS" style="left:27%;top:48%;">
         <div class="position-label">Shortstop</div>
         <select onchange="onDefenseChange('SS', this.value)"><option value="">— Unassigned —</option></select>
       </div>
 
-      <!-- Second Base: 50% x, 44% y (just above 2B bag) -->
-      <div class="position-slot" id="slot-2B" style="left:62%;top:51%;">
+      <!-- Second Base: moved right and slightly lower to clear SS -->
+      <div class="position-slot" id="slot-2B" style="left:73%;top:48%;">
         <div class="position-label">2nd Base</div>
         <select onchange="onDefenseChange('2B', this.value)"><option value="">— Unassigned —</option></select>
       </div>
 
-      <!-- Pitcher: 50% x, 63% y -->
-      <div class="position-slot" id="slot-P" style="left:50%;top:62%;">
+      <!-- Pitcher: moved lower to create gap from SS/2B above and 3B/1B below -->
+      <div class="position-slot" id="slot-P" style="left:50%;top:67%;">
         <div class="position-label">Pitcher</div>
         <select onchange="onDefenseChange('P', this.value)"><option value="">— Unassigned —</option></select>
       </div>
 
-      <!-- Third Base: 26% x, 73% y -->
-      <div class="position-slot" id="slot-3B" style="left:26%;top:73%;">
+      <!-- Third Base: nudged down slightly to match pitcher gap -->
+      <div class="position-slot" id="slot-3B" style="left:26%;top:78%;">
         <div class="position-label">3rd Base</div>
         <select onchange="onDefenseChange('3B', this.value)"><option value="">— Unassigned —</option></select>
       </div>
 
-      <!-- First Base: 74% x, 73% y -->
-      <div class="position-slot" id="slot-1B" style="left:74%;top:73%;">
+      <!-- First Base: nudged down slightly to match pitcher gap -->
+      <div class="position-slot" id="slot-1B" style="left:74%;top:78%;">
         <div class="position-label">1st Base</div>
         <select onchange="onDefenseChange('1B', this.value)"><option value="">— Unassigned —</option></select>
       </div>
 
-      <!-- Catcher: 50% x, 92% y -->
-      <div class="position-slot" id="slot-C" style="left:50%;top:92%;">
+      <!-- Catcher: nudged down to match -->
+      <div class="position-slot" id="slot-C" style="left:50%;top:93%;">
         <div class="position-label">Catcher</div>
         <select onchange="onDefenseChange('C', this.value)"><option value="">— Unassigned —</option></select>
       </div>
@@ -1001,7 +1146,6 @@
 <div id="tab-offense" class="tab-panel">
 
   <div class="action-bar">
-    <button class="btn btn-primary" onclick="addBattingSpot()">+ Add EP Spot</button>
     <button class="btn btn-save" onclick="saveLineup()">💾 Save</button>
     <button class="btn btn-edit" onclick="editLineup()" style="display:none;">✏️ Edit</button>
     <button class="btn btn-send" onclick="sendLineup()" style="display:none;">📲 Send to Coaches</button>
@@ -1024,6 +1168,36 @@
   <button class="add-spot-btn" onclick="addBattingSpot()">＋ Add EP Spot</button>
 
 </div>
+<!-- ===================== INPUTS TAB ===================== -->
+<div id="tab-inputs" class="tab-panel">
+
+  <div class="section-title">Player Roster &amp; Defaults</div>
+  <p style="font-size:0.78rem; color:var(--text2); margin-bottom:18px;">
+    Changes here update the default pre-selections on the Defense and Offense tabs. Manual changes made on those tabs are preserved.
+  </p>
+
+  <div class="inputs-table-wrap">
+    <table class="inputs-table" id="inputs-table">
+      <thead>
+        <tr>
+          <th>Player</th>
+          <th>Pref Position</th>
+          <th>Alt Position</th>
+          <th>Starting Position</th>
+          <th class="col-bat-order">Bat Order</th>
+        </tr>
+      </thead>
+      <tbody id="inputs-tbody"></tbody>
+    </table>
+  </div>
+
+  <div class="action-bar" style="margin-top:20px;">
+    <button class="btn btn-primary" onclick="applyInputChanges()">✓ Apply Changes</button>
+    <button class="btn btn-ghost" onclick="resetInputsToDefault()">↺ Reset to Defaults</button>
+  </div>
+
+</div>
+
 </main>
 
 <script>
@@ -1033,21 +1207,21 @@
 // startPos values: a DEF_POSITIONS key ("3B","1B","P","C","SS","2B","LF","CF","RF"),
 //   or "Backup Pitcher", "Backup Catcher", "Bench"
 const players = [
-  { name: "Abigail B.",   pref: "3B", alt: "SS", bats: "R", startPos: "3B"             },
-  { name: "Aubrey L.",    pref: "1B", alt: "P",  bats: "R", startPos: "1B"             },
-  { name: "Lilyana A.",   pref: "1B", alt: "P",  bats: "R", startPos: "Bench"          },
-  { name: "Madelyn L.",   pref: "P",  alt: "1B", bats: "R", startPos: "Bench"          },
-  { name: "Genesis G.",   pref: "SS", alt: "OF", bats: "R", startPos: "Bench"          },
-  { name: "Ariella B.",   pref: "2B", alt: "OF", bats: "R", startPos: "LF"             },
-  { name: "Kenlee B.",    pref: "2B", alt: "P",  bats: "S", startPos: "2B"             },
-  { name: "Raegan H.",    pref: "SS", alt: "OF", bats: "R", startPos: "SS"             },
-  { name: "Gabriella P.", pref: "1B", alt: "P",  bats: "R", startPos: "Backup Pitcher" },
-  { name: "Kyra B.",      pref: "2B", alt: "P",  bats: "R", startPos: "Bench"          },
-  { name: "Cavana S.",    pref: "3B", alt: "OF", bats: "R", startPos: "RF"             },
-  { name: "Leighton G.",  pref: "C",  alt: "OF", bats: "R", startPos: "CF"             },
-  { name: "Kayla C.",     pref: "C",  alt: "3B", bats: "L", startPos: "Backup Catcher" },
-  { name: "Miah R.",      pref: "C",  alt: "1B", bats: "R", startPos: "C"              },
-  { name: "Monica B.",    pref: "2B", alt: "P",  bats: "R", startPos: "Bench"          },
+  { name: "Abigail B.",   pref: "3B", alt: "SS", bats: "R", startPos: "3B",             batOrder: 4  },
+  { name: "Aubrey L.",    pref: "1B", alt: "P",  bats: "R", startPos: "1B",             batOrder: 5,  pitchOrder: 2 },
+  { name: "Lilyana A.",   pref: "1B", alt: "P",  bats: "R", startPos: "Bench",          batOrder: 6,  pitchOrder: 4 },
+  { name: "Madelyn L.",   pref: "P",  alt: "1B", bats: "R", startPos: "Bench",          batOrder: 15, pitchOrder: 6 },
+  { name: "Genesis G.",   pref: "SS", alt: "OF", bats: "R", startPos: "Bench",          batOrder: 14 },
+  { name: "Ariella B.",   pref: "2B", alt: "OF", bats: "R", startPos: "LF",             batOrder: 7  },
+  { name: "Kenlee B.",    pref: "2B", alt: "P",  bats: "S", startPos: "2B",             batOrder: 2,  pitchOrder: 7 },
+  { name: "Raegan H.",    pref: "SS", alt: "OF", bats: "R", startPos: "SS",             batOrder: 1  },
+  { name: "Gabriella P.", pref: "1B", alt: "P",  bats: "R", startPos: "Backup Pitcher", batOrder: 9,  pitchOrder: 3 },
+  { name: "Kyra B.",      pref: "2B", alt: "P",  bats: "R", startPos: "Bench",          batOrder: 13, pitchOrder: 5 },
+  { name: "Cavana S.",    pref: "3B", alt: "OF", bats: "R", startPos: "RF",             batOrder: 10 },
+  { name: "Leighton G.",  pref: "C",  alt: "OF", bats: "R", startPos: "CF",             batOrder: 3  },
+  { name: "Kayla C.",     pref: "C",  alt: "3B", bats: "L", startPos: "Backup Catcher", batOrder: 11 },
+  { name: "Miah R.",      pref: "C",  alt: "1B", bats: "R", startPos: "C",              batOrder: 12 },
+  { name: "Monica B.",    pref: "2B", alt: "P",  bats: "R", startPos: "Bench",          batOrder: 8,  pitchOrder: 1 },
 ];
 
 // Defensive positions and which "OF" position they map to
@@ -1105,11 +1279,7 @@ function buildDefenseDropdowns() {
 function rebuildSlotOptions(select, slotKey) {
   select.innerHTML = '<option value="">— Unassigned —</option>';
 
-  const preferred = [];
-  const alternates = [];
-  const others = [];
-
-  // Build a map of playerName -> slotKey for all currently assigned slots (excluding this slot)
+  // Map of playerName -> slotKey for all slots OTHER than this one
   const assignedElsewhere = {};
   DEF_POSITIONS.forEach(pos => {
     if (pos.key !== slotKey && defenseAssignments[pos.key]) {
@@ -1117,88 +1287,70 @@ function rebuildSlotOptions(select, slotKey) {
     }
   });
 
-  // ── PITCHER: pitchers-only flat list, no optgroups ──────────
-  if (slotKey === "P") {
-    players
-      .filter(p => p.pref === "P" || p.alt === "P")
-      .forEach(p => {
-        const o = document.createElement("option");
-        o.value = p.name;
-        const elseSlot = assignedElsewhere[p.name];
-        if (elseSlot) {
-          const slotLabel = DEF_POSITIONS.find(d => d.key === elseSlot)?.label || elseSlot;
-          o.textContent = p.name + " ★ " + slotLabel;
-          o.className = "already-assigned";
-          o.style.color = "#f85149";
-        } else {
-          o.textContent = p.name;
-        }
-        select.appendChild(o);
-      });
-    const assignedVal = defenseAssignments[slotKey] || "";
-    select.value = assignedVal;
-    select.className = select.value ? "assigned" : "";
-    return;
-  }
-  // ── All other positions: preferred / alternate / others ──────
+  const isOFSlot       = (slotKey === "LF" || slotKey === "CF" || slotKey === "RF");
+  const isPitcherSlot  = slotKey === "P";
+  const isCatcherSlot  = slotKey === "C";
+
+  const preferred   = [];
+  const alternates  = [];
+  const others      = [];
+  const assignedRed = [];
 
   players.forEach(p => {
-    const isOFSlot = (slotKey === "LF" || slotKey === "CF" || slotKey === "RF");
-    const isPref = isOFSlot ? (p.pref === "OF" || p.alt === "OF") : p.pref === slotKey;
-    const isAlt  = isOFSlot ? false : p.alt === slotKey;
+    // Pitcher slot: only players who can pitch
+    if (isPitcherSlot && p.pref !== "P" && p.alt !== "P") return;
+    // Catcher slot: only players who can catch
+    if (isCatcherSlot && p.pref !== "C" && p.alt !== "C") return;
 
-    if (isPref) preferred.push(p);
-    else if (isAlt) alternates.push(p);
-    else others.push(p);
+    // Determine fit category
+    let isPref, isAlt;
+    if (isOFSlot) {
+      isPref = (p.pref === "OF" || p.alt === "OF");
+      isAlt  = false;
+    } else if (isPitcherSlot) {
+      isPref = p.pref === "P";
+      isAlt  = p.alt  === "P";
+    } else if (isCatcherSlot) {
+      isPref = p.pref === "C";
+      isAlt  = p.alt  === "C";
+    } else {
+      isPref = p.pref === slotKey;
+      isAlt  = p.alt  === slotKey;
+    }
+
+    if (assignedElsewhere[p.name]) {
+      assignedRed.push(p);
+    } else if (isPref) {
+      preferred.push(p);
+    } else if (isAlt) {
+      alternates.push(p);
+    } else {
+      others.push(p);
+    }
   });
 
-  function makeOption(p) {
+  // Append: preferred → alternate → others → assigned-elsewhere (red)
+  // For pitcher slot, sort each group by pitchOrder
+  const sortByPitch = (arr) => isPitcherSlot
+    ? [...arr].sort((a, b) => (a.pitchOrder ?? 99) - (b.pitchOrder ?? 99))
+    : arr;
+
+  [...sortByPitch(preferred), ...sortByPitch(alternates), ...sortByPitch(others)].forEach(p => {
     const o = document.createElement("option");
     o.value = p.name;
-    const elseSlot = assignedElsewhere[p.name];
-    if (elseSlot) {
-      const slotLabel = DEF_POSITIONS.find(d => d.key === elseSlot)?.label || elseSlot;
-      o.textContent = p.name + " ★ " + slotLabel;
-      o.className = "already-assigned";
-      o.style.color = "#f85149";
-    } else {
-      o.textContent = p.name;
-    }
-    return o;
-  }
+    o.textContent = p.name;
+    o.style.color = "#f0f4ff";
+    select.appendChild(o);
+  });
 
-  if (preferred.length) {
-    const og = document.createElement("optgroup");
-    og.label = "★ Preferred";
-    preferred.forEach(p => {
-      const o = makeOption(p);
-      if (!assignedElsewhere[p.name]) o.className = "preferred";
-      og.appendChild(o);
-    });
-    select.appendChild(og);
-  }
-  if (alternates.length) {
-    const og = document.createElement("optgroup");
-    og.label = "◇ Alternate";
-    alternates.forEach(p => {
-      const o = makeOption(p);
-      if (!assignedElsewhere[p.name]) o.className = "alternate";
-      og.appendChild(o);
-    });
-    select.appendChild(og);
-  }
-  if (others.length) {
-    const og = document.createElement("optgroup");
-    og.label = "· Other Players";
-    others.forEach(p => {
-      const o = makeOption(p);
-      if (!assignedElsewhere[p.name]) o.className = "other";
-      og.appendChild(o);
-    });
-    select.appendChild(og);
-  }
+  sortByPitch(assignedRed).forEach(p => {
+    const o = document.createElement("option");
+    o.value = p.name;
+    o.textContent = p.name;
+    o.style.color = "#e8304a";
+    select.appendChild(o);
+  });
 
-  // Restore assignment value for this slot
   const assignedVal = defenseAssignments[slotKey] || "";
   select.value = assignedVal;
   select.className = select.value ? "assigned" : "";
@@ -1359,38 +1511,92 @@ const POS_FULL = {
   "3B":"3rd Base", SS:"Shortstop", LF:"Left Field", CF:"Center Field", RF:"Right Field"
 };
 
-// Build initial batting order from whoever is currently on the defense field.
-// Each entry: { id, playerName, role, flexName }
-//   role: "Regular" | "DP" | "EP"
-//   flexName: name of the FLEX hitter when role === "DP" (else "")
+// Sentinel name for the unassigned pitcher placeholder
+const PITCHER_PLACEHOLDER = "__PITCHER__";
+
 function buildInitialBattingOrder() {
   const order = [];
   Object.entries(defenseAssignments).forEach(([slot, name]) => {
-    if (name) order.push({ id: slot, playerName: name, role: "Regular", flexName: "" });
+    if (name) {
+      const p = players.find(pl => pl.name === name);
+      order.push({ id: slot, playerName: name, role: "Regular", flexName: "", manuallyMoved: false });
+    }
   });
+  // Sort by batting order preference
+  order.sort((a, b) => {
+    const pa = players.find(p => p.name === a.playerName);
+    const pb = players.find(p => p.name === b.playerName);
+    return (pa?.batOrder ?? 99) - (pb?.batOrder ?? 99);
+  });
+  // Pad to 9 with placeholder if pitcher unassigned
+  while (order.length < 9) {
+    const hasP = order.some(e => e.playerName === PITCHER_PLACEHOLDER);
+    order.push({
+      id: "placeholder-" + Date.now() + Math.random(),
+      playerName: !hasP && !defenseAssignments["P"] ? PITCHER_PLACEHOLDER : "",
+      role: "Regular", flexName: "", manuallyMoved: false
+    });
+  }
   return order;
 }
 
 let battingOrder = buildInitialBattingOrder();
 let dragSrcIdx = null;
 
-// Called whenever defense changes — adds/removes players to mirror the field,
-// preserving existing role assignments where possible.
 function syncBattingOrderToDefense() {
-  const onField = new Set(
-    Object.values(defenseAssignments).filter(Boolean)
+  const onField = new Set(Object.values(defenseAssignments).filter(Boolean));
+
+  // Remove non-EP players no longer on the field (keep EPs and placeholders)
+  battingOrder = battingOrder.filter(e =>
+    e.role === "EP" ||
+    e.playerName === PITCHER_PLACEHOLDER ||
+    onField.has(e.playerName)
   );
 
-  // Remove players no longer on the field (keep EPs — they have no defense slot)
-  battingOrder = battingOrder.filter(e => e.role === "EP" || onField.has(e.playerName));
+  // Remove placeholder if pitcher is now assigned
+  if (defenseAssignments["P"]) {
+    battingOrder = battingOrder.filter(e => e.playerName !== PITCHER_PLACEHOLDER);
+  }
 
-  // Add any new field players not yet in the order
+  // Find new field players not yet in order
   const inOrder = new Set(battingOrder.map(e => e.playerName));
+  const newEntries = [];
   onField.forEach(name => {
     if (!inOrder.has(name)) {
-      battingOrder.push({ id: Date.now() + Math.random(), playerName: name, role: "Regular", flexName: "" });
+      newEntries.push({ id: Date.now() + Math.random(), playerName: name, role: "Regular", flexName: "", manuallyMoved: false });
     }
   });
+
+  // Sort new entries by batOrder preference
+  newEntries.sort((a, b) => {
+    const pa = players.find(p => p.name === a.playerName);
+    const pb = players.find(p => p.name === b.playerName);
+    return (pa?.batOrder ?? 99) - (pb?.batOrder ?? 99);
+  });
+
+  // Insert new entries in batOrder position among non-manually-moved entries
+  newEntries.forEach(entry => {
+    const pa = players.find(p => p.name === entry.playerName);
+    const newBatOrder = pa?.batOrder ?? 99;
+    // Find insertion point: after last non-manual entry with lower batOrder
+    let insertAt = battingOrder.length;
+    for (let i = 0; i < battingOrder.length; i++) {
+      if (battingOrder[i].manuallyMoved) continue;
+      const pb = players.find(p => p.name === battingOrder[i].playerName);
+      if ((pb?.batOrder ?? 99) > newBatOrder) { insertAt = i; break; }
+    }
+    battingOrder.splice(insertAt, 0, entry);
+  });
+
+  // Pad to 9 if still short
+  while (battingOrder.length < 9) {
+    const hasP = battingOrder.some(e => e.playerName === PITCHER_PLACEHOLDER);
+    battingOrder.push({
+      id: "placeholder-" + Date.now() + Math.random(),
+      playerName: !hasP && !defenseAssignments["P"] ? PITCHER_PLACEHOLDER : "",
+      role: "Regular", flexName: "", manuallyMoved: false
+    });
+  }
 
   buildBattingList();
 }
@@ -1415,21 +1621,37 @@ function buildBattingList() {
   battingOrder.forEach((entry, idx) => {
     const row = document.createElement("div");
     row.className = "lineup-row";
-    row.draggable = true;
     row.dataset.idx = idx;
 
-    // --- Determine display based on role ---
+    // ── Pitcher placeholder row ──────────────────────────────
+    if (entry.playerName === PITCHER_PLACEHOLDER) {
+      row.draggable = false;
+      row.innerHTML = `
+        <div class="bat-order-num">${idx + 1}</div>
+        <div></div>
+        <div class="player-info">
+          <div class="player-name-text" style="color:#b22234;font-style:italic;">Pitcher</div>
+          <div class="player-meta"><span class="pos-badge" style="color:#b22234;border-color:#b22234;background:rgba(178,34,52,0.1);">Assign on Defense tab</span></div>
+        </div>
+        <div></div>
+        <div></div>`;
+      list.appendChild(row);
+      return;
+    }
+
+    row.draggable = true;
+
     const isDP  = entry.role === "DP";
     const isEP  = entry.role === "EP";
 
-    // The hitter shown on the left: FLEX player (if DP), otherwise the player themselves
-    const hitterName = isDP && entry.flexName ? entry.flexName : entry.playerName;
-    const hitterObj  = playerByName(hitterName);
+    // For DP: FLEX is the hitter (left), DP player is the defender (right)
+    const flexName   = isDP ? (entry.flexName || "") : "";
+    const hitterName = isDP ? flexName : entry.playerName;
+    const hitterObj  = playerByName(isDP ? (flexName || entry.playerName) : entry.playerName);
 
-    // Defensive position badge — pulled from actual field assignments
+    // Defensive position badge — always the DP player's field slot
     let defBadge = "";
     if (isDP) {
-      // DP plays defense; show their slot
       const slot = defSlotForPlayer(entry.playerName);
       defBadge = slot ? `<span class="pos-badge pos-badge-field">${POS_FULL[slot] || slot}</span>` : "";
     } else if (isEP) {
@@ -1439,34 +1661,47 @@ function buildBattingList() {
       defBadge = slot ? `<span class="pos-badge pos-badge-field">${POS_FULL[slot] || slot}</span>` : "";
     }
 
-    // Bat hand badge
+    // Bat hand badge (always the hitter)
     const batHand = !hitterObj ? "" :
       hitterObj.bats === "L" ? `<span class="bat-hand-badge bat-L">L</span>` :
       hitterObj.bats === "S" ? `<span class="bat-hand-badge bat-S">SW</span>` :
                                `<span class="bat-hand-badge bat-R">R</span>`;
 
-    // DP sub-label shown below the FLEX name
-    const dpSubLabel = isDP
-      ? `<div class="dp-sub-label">DP: ${entry.playerName}</div>`
-      : "";
+    // DP: two-name horizontal row
+    let nameBlock = "";
+    if (isDP) {
+      const flexDisplay = flexName
+        ? `<span class="player-name-text">${flexName}</span><span class="inline-role-tag inline-flex-tag">FLEX</span>`
+        : `<span class="player-name-text" style="color:var(--text3);font-style:italic;">Select FLEX…</span>`;
+      nameBlock = `
+        <div class="player-name-row dp-name-row">
+          <span class="dp-pair-flex">${flexDisplay}</span>
+          <span class="dp-pair-sep">·</span>
+          <span class="dp-pair-dp">
+            <span class="player-name-text dp-name-red">${entry.playerName}</span>
+            <span class="inline-role-tag inline-dp-tag">DP</span>
+          </span>
+        </div>`;
+    } else {
+      nameBlock = `
+        <div class="player-name-row">
+          <span class="player-name-text">${entry.playerName}</span>
+        </div>`;
+    }
 
     row.innerHTML = `
       <div class="bat-order-num">${idx + 1}</div>
       <div class="drag-handle"><span></span><span></span><span></span></div>
       <div class="player-info">
-        <div class="player-name-text">${hitterName || '<span style="color:var(--text3);font-style:italic">Select FLEX…</span>'}</div>
-        ${dpSubLabel}
+        ${nameBlock}
         <div class="player-meta">${defBadge}</div>
       </div>
       <div class="role-cell"></div>
       <div class="bat-hand-cell">${batHand}</div>`;
 
-    // Build role dropdown and optional FLEX dropdown into the role-cell
     const roleCell = row.querySelector(".role-cell");
     roleCell.appendChild(buildRoleSelect(entry.role, idx));
-    if (isDP) {
-      roleCell.appendChild(buildFlexSelect(entry.flexName, idx));
-    }
+    if (isDP) roleCell.appendChild(buildFlexSelect(entry.flexName, idx));
 
     // Drag events
     row.addEventListener("dragstart", e => {
@@ -1488,7 +1723,10 @@ function buildBattingList() {
       e.preventDefault();
       if (dragSrcIdx === null || dragSrcIdx === idx) return;
       const moved = battingOrder.splice(dragSrcIdx, 1)[0];
+      moved.manuallyMoved = true;
       battingOrder.splice(idx, 0, moved);
+      // Also mark the displaced entries as manually moved
+      battingOrder.forEach(e => { if (e.playerName && e.playerName !== PITCHER_PLACEHOLDER) e.manuallyMoved = true; });
       dragSrcIdx = null;
       buildBattingList();
     });
@@ -1584,21 +1822,41 @@ function saveLineup() {
   list.querySelectorAll(".lineup-row").forEach((row, idx) => {
     const entry = battingOrder[idx];
     if (!entry) return;
+
+    // Pitcher placeholder — just hide the edit row, show static red text
+    if (entry.playerName === PITCHER_PLACEHOLDER) {
+      row.dataset.savedHidden = "1";
+      row.style.display = "none";
+      const staticRow = document.createElement("div");
+      staticRow.className = "lineup-row saved-static-row";
+      staticRow.dataset.savedStatic = "1";
+      staticRow.innerHTML = `
+        <div class="bat-order-num">${idx + 1}</div>
+        <div></div>
+        <div class="player-info">
+          <div class="saved-player-line">
+            <span class="player-name-text" style="color:#b22234;font-style:italic;">Pitcher</span>
+          </div>
+        </div>
+        <div></div><div></div>`;
+      list.insertBefore(staticRow, row.nextSibling);
+      return;
+    }
+
     row.dataset.savedHidden = "1";
     row.style.display = "none";
 
     const isDP = entry.role === "DP";
     const isEP = entry.role === "EP";
 
-    const hitterName = isDP && entry.flexName ? entry.flexName : entry.playerName;
-    const hitterObj  = playerByName(hitterName);
+    const flexName   = isDP ? (entry.flexName || "") : "";
+    const hitterName = isDP ? flexName : entry.playerName;
+    const hitterObj  = playerByName(isDP ? (flexName || entry.playerName) : entry.playerName);
 
-    // Role tag
-    let roleTag = "";
-    if (isDP)       roleTag = `<span class="saved-role-tag saved-role-dp">DP</span>`;
-    else if (isEP)  roleTag = `<span class="saved-role-tag saved-role-ep">EP</span>`;
+    // EP badge
+    const epBadge = isEP ? `<span class="saved-role-tag saved-role-ep">EP</span>` : "";
 
-    // Position text
+    // Position text (always from DP player's slot)
     let posText = "";
     if (isDP) {
       const slot = defSlotForPlayer(entry.playerName);
@@ -1608,14 +1866,34 @@ function saveLineup() {
       posText = slot ? POS_FULL[slot] : "";
     }
 
-    // DP player name suffix
-    const dpSuffix = isDP ? ` <span class="saved-dp-name">DP: ${entry.playerName}</span>` : "";
-
     // Bat hand
     const batHand = !hitterObj ? "" :
       hitterObj.bats === "L" ? `<span class="bat-hand-badge bat-L">L</span>` :
       hitterObj.bats === "S" ? `<span class="bat-hand-badge bat-S">SW</span>` :
                                `<span class="bat-hand-badge bat-R">R</span>`;
+
+    // Build name block
+    let nameBlock = "";
+    if (isDP) {
+      const flexDisplay = flexName
+        ? `<span class="player-name-text">${flexName}</span><span class="saved-role-tag saved-role-flex">FLEX</span>`
+        : `<span class="player-name-text" style="color:var(--text3);font-style:italic;">—</span>`;
+      nameBlock = `
+        <div class="saved-player-line dp-name-row">
+          <span class="dp-pair-flex">${flexDisplay}</span>
+          <span class="dp-pair-sep">·</span>
+          <span class="dp-pair-dp">
+            <span class="player-name-text dp-name-red">${entry.playerName}</span>
+            <span class="saved-role-tag saved-role-dp">DP</span>
+          </span>
+        </div>`;
+    } else {
+      nameBlock = `
+        <div class="saved-player-line">
+          <span class="player-name-text">${hitterName || '—'}</span>
+          ${epBadge}
+        </div>`;
+    }
 
     const staticRow = document.createElement("div");
     staticRow.className = "lineup-row saved-static-row";
@@ -1624,11 +1902,7 @@ function saveLineup() {
       <div class="bat-order-num">${idx + 1}</div>
       <div></div>
       <div class="player-info">
-        <div class="saved-player-line">
-          <span class="player-name-text">${hitterName || '—'}</span>
-          ${dpSuffix}
-          ${roleTag}
-        </div>
+        ${nameBlock}
         ${posText ? `<div class="saved-pos-text">${posText}</div>` : ""}
       </div>
       <div></div>
@@ -1754,11 +2028,176 @@ function sendLineup() {
     });
   }
 }
-function switchTab(tabName) {
+function switchTab(tabName, evt) {
   document.querySelectorAll(".tab-panel").forEach(p => p.classList.remove("active"));
   document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
   document.getElementById("tab-" + tabName).classList.add("active");
-  event.target.classList.add("active");
+  if (evt && evt.target) evt.target.classList.add("active");
+}
+
+// ============================================================
+//  INPUTS TAB
+// ============================================================
+const ALL_POSITIONS = ["P","C","1B","2B","3B","SS","OF"];
+const ALL_START_POS = ["P","C","1B","2B","3B","SS","LF","CF","RF","Backup Pitcher","Backup Catcher","Bench"];
+const POS_DISPLAY   = {
+  P:"Pitcher", C:"Catcher", "1B":"1st Base", "2B":"2nd Base", "3B":"3rd Base",
+  SS:"Shortstop", OF:"Outfield", LF:"Left Field", CF:"Center Field", RF:"Right Field",
+  "Backup Pitcher":"Backup Pitcher", "Backup Catcher":"Backup Catcher", Bench:"Bench"
+};
+
+function buildInputsTable() {
+  const tbody = document.getElementById("inputs-tbody");
+  tbody.innerHTML = "";
+
+  players.forEach((p, idx) => {
+    const tr = document.createElement("tr");
+    tr.dataset.playerIdx = idx;
+
+    const nameTd = document.createElement("td");
+    nameTd.className = "player-name-cell";
+    nameTd.textContent = p.name;
+
+    const prefTd  = document.createElement("td");
+    const altTd   = document.createElement("td");
+    const startTd = document.createElement("td");
+    const batTd   = document.createElement("td");
+    batTd.style.textAlign = "center";
+
+    prefTd.appendChild(buildPosSelect("pref", p.pref, ALL_POSITIONS, idx));
+    altTd.appendChild(buildPosSelect("alt", p.alt, ALL_POSITIONS, idx));
+    startTd.appendChild(buildStartSelect(p.startPos, idx));
+
+    const batInput = document.createElement("input");
+    batInput.type = "number";
+    batInput.min = "1";
+    batInput.max = "15";
+    batInput.value = p.batOrder;
+    batInput.dataset.playerIdx = idx;
+    batInput.dataset.field = "batOrder";
+    batTd.appendChild(batInput);
+
+    tr.append(nameTd, prefTd, altTd, startTd, batTd);
+    tbody.appendChild(tr);
+  });
+}
+
+function buildPosSelect(field, currentVal, options, playerIdx) {
+  const sel = document.createElement("select");
+  sel.dataset.playerIdx = playerIdx;
+  sel.dataset.field = field;
+  options.forEach(v => {
+    const o = document.createElement("option");
+    o.value = v;
+    o.textContent = POS_DISPLAY[v] || v;
+    if (v === currentVal) o.selected = true;
+    sel.appendChild(o);
+  });
+  return sel;
+}
+
+function buildStartSelect(currentVal, playerIdx) {
+  const sel = document.createElement("select");
+  sel.dataset.playerIdx = playerIdx;
+  sel.dataset.field = "startPos";
+  ALL_START_POS.forEach(v => {
+    const o = document.createElement("option");
+    o.value = v;
+    o.textContent = POS_DISPLAY[v] || v;
+    if (v === currentVal) o.selected = true;
+    sel.appendChild(o);
+  });
+  return sel;
+}
+
+function applyInputChanges() {
+  // Read all inputs from the table and update the players array
+  const tbody = document.getElementById("inputs-tbody");
+  tbody.querySelectorAll("tr").forEach(tr => {
+    const idx = parseInt(tr.dataset.playerIdx);
+    if (isNaN(idx)) return;
+    const prefSel  = tr.querySelector("select[data-field='pref']");
+    const altSel   = tr.querySelector("select[data-field='alt']");
+    const startSel = tr.querySelector("select[data-field='startPos']");
+    const batInput = tr.querySelector("input[data-field='batOrder']");
+    if (prefSel)  players[idx].pref     = prefSel.value;
+    if (altSel)   players[idx].alt      = altSel.value;
+    if (startSel) players[idx].startPos = startSel.value;
+    if (batInput) players[idx].batOrder = parseInt(batInput.value) || players[idx].batOrder;
+  });
+
+  // Apply new startPos defaults to empty defense slots
+  const newDefaults = defaultAssignments();
+  DEF_POSITIONS.forEach(pos => {
+    if (!defenseAssignments[pos.key]) {
+      defenseAssignments[pos.key] = newDefaults[pos.key] || "";
+    }
+  });
+
+  // Rebuild backup defaults
+  backupAssignments.P = "";
+  backupAssignments.C = "";
+  players.forEach(p => {
+    if (p.startPos === "Backup Pitcher") backupAssignments.P = p.name;
+    if (p.startPos === "Backup Catcher") backupAssignments.C = p.name;
+  });
+
+  // Re-sort non-manually-moved batting order entries by updated batOrder
+  const autoEntries = battingOrder.filter(e => !e.manuallyMoved && e.role !== "EP" && e.playerName !== PITCHER_PLACEHOLDER);
+  autoEntries.sort((a, b) => {
+    const pa = players.find(p => p.name === a.playerName);
+    const pb = players.find(p => p.name === b.playerName);
+    return (pa?.batOrder ?? 99) - (pb?.batOrder ?? 99);
+  });
+  let autoIdx = 0;
+  battingOrder = battingOrder.map(e => {
+    if (!e.manuallyMoved && e.role !== "EP" && e.playerName !== PITCHER_PLACEHOLDER) {
+      return autoEntries[autoIdx++] || e;
+    }
+    return e;
+  });
+
+  buildDefenseDropdowns();
+  buildStatusPanel();
+  buildBattingList();
+
+  const btn = document.querySelector("#tab-inputs .btn-primary");
+  if (btn) { btn.textContent = "✓ Applied!"; setTimeout(() => btn.textContent = "✓ Apply Changes", 1500); }
+}
+
+function resetInputsToDefault() {
+  const defaults = [
+    { pref:"3B", alt:"SS",  startPos:"3B",             batOrder:4  },
+    { pref:"1B", alt:"P",   startPos:"1B",             batOrder:5  },
+    { pref:"1B", alt:"P",   startPos:"Bench",          batOrder:6  },
+    { pref:"P",  alt:"1B",  startPos:"Bench",          batOrder:15 },
+    { pref:"SS", alt:"OF",  startPos:"Bench",          batOrder:14 },
+    { pref:"2B", alt:"OF",  startPos:"LF",             batOrder:7  },
+    { pref:"2B", alt:"P",   startPos:"2B",             batOrder:2  },
+    { pref:"SS", alt:"OF",  startPos:"SS",             batOrder:1  },
+    { pref:"1B", alt:"P",   startPos:"Backup Pitcher", batOrder:9  },
+    { pref:"2B", alt:"P",   startPos:"Bench",          batOrder:13 },
+    { pref:"3B", alt:"OF",  startPos:"RF",             batOrder:10 },
+    { pref:"C",  alt:"OF",  startPos:"CF",             batOrder:3  },
+    { pref:"C",  alt:"3B",  startPos:"Backup Catcher", batOrder:11 },
+    { pref:"C",  alt:"1B",  startPos:"C",              batOrder:12 },
+    { pref:"2B", alt:"P",   startPos:"Bench",          batOrder:8  },
+  ];
+  players.forEach((p, i) => Object.assign(p, defaults[i]));
+  battingOrder.forEach(e => { e.manuallyMoved = false; });
+  buildInputsTable();
+  // Fully reset defense and batting order
+  const d = defaultAssignments();
+  DEF_POSITIONS.forEach(pos => { defenseAssignments[pos.key] = d[pos.key] || ""; });
+  backupAssignments.P = ""; backupAssignments.C = "";
+  players.forEach(p => {
+    if (p.startPos === "Backup Pitcher") backupAssignments.P = p.name;
+    if (p.startPos === "Backup Catcher") backupAssignments.C = p.name;
+  });
+  battingOrder = buildInitialBattingOrder();
+  buildDefenseDropdowns();
+  buildStatusPanel();
+  buildBattingList();
 }
 
 // ============================================================
@@ -1773,6 +2212,7 @@ players.forEach(p => {
 buildDefenseDropdowns();
 buildStatusPanel();
 buildBattingList();
+buildInputsTable();
 </script>
 </body>
 </html>
