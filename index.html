@@ -699,6 +699,13 @@
   }
   .btn-edit:hover { background: #4090e0; }
 
+  .btn-send {
+    background: #e8572a;
+    color: #fff;
+    font-weight: 700;
+  }
+  .btn-send:hover { background: #c94420; }
+
   /* Hide legend, drag handles, and reset button in saved mode */
   body.saved-mode .legend { display: none; }
   body.saved-mode .drag-handle { display: none; }
@@ -747,6 +754,7 @@
     <button class="btn btn-primary" onclick="clearDefense()">Reset to Defaults</button>
     <button class="btn btn-save" onclick="saveLineup()">💾 Save</button>
     <button class="btn btn-edit" onclick="editLineup()" style="display:none;">✏️ Edit</button>
+    <button class="btn btn-send" onclick="sendLineup()" style="display:none;">📲 Send to Coaches</button>
     <button class="btn btn-ghost" onclick="window.print()">Print</button>
   </div>
 
@@ -996,6 +1004,7 @@
     <button class="btn btn-primary" onclick="addBattingSpot()">+ Add EP Spot</button>
     <button class="btn btn-save" onclick="saveLineup()">💾 Save</button>
     <button class="btn btn-edit" onclick="editLineup()" style="display:none;">✏️ Edit</button>
+    <button class="btn btn-send" onclick="sendLineup()" style="display:none;">📲 Send to Coaches</button>
     <button class="btn btn-ghost" onclick="window.print()">Print</button>
   </div>
 
@@ -1630,6 +1639,7 @@ function saveLineup() {
   // Toggle buttons
   document.querySelectorAll(".btn-save").forEach(b => b.style.display = "none");
   document.querySelectorAll(".btn-edit").forEach(b => b.style.display = "");
+  document.querySelectorAll(".btn-send").forEach(b => b.style.display = "");
 }
 
 function editLineup() {
@@ -1653,6 +1663,96 @@ function editLineup() {
   // Toggle buttons
   document.querySelectorAll(".btn-save").forEach(b => b.style.display = "");
   document.querySelectorAll(".btn-edit").forEach(b => b.style.display = "none");
+  document.querySelectorAll(".btn-send").forEach(b => b.style.display = "none");
+}
+
+// ============================================================
+//  COACHES LIST
+// ============================================================
+const coaches = [
+  { name: "Mark Csepke", title: "Assistant Coach", phone: "12818021521" },
+];
+
+// ============================================================
+//  BUILD LINEUP TEXT MESSAGE
+// ============================================================
+function buildLineupText() {
+  const lines = [];
+  const date = new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+  lines.push(`⚾ LINEUP CARD — ${date}`);
+  lines.push("");
+
+  // ── DEFENSE ──────────────────────────────────────────────
+  lines.push("── DEFENSE ──");
+  const defOrder = ["P","C","1B","2B","3B","SS","LF","CF","RF"];
+  const defLabels = {
+    P:"Pitcher", C:"Catcher", "1B":"1st Base", "2B":"2nd Base",
+    "3B":"3rd Base", SS:"Shortstop", LF:"Left Field", CF:"Center Field", RF:"Right Field"
+  };
+  defOrder.forEach(key => {
+    const name = defenseAssignments[key] || "—";
+    lines.push(`${defLabels[key]}: ${name}`);
+  });
+
+  // Backups
+  lines.push("");
+  lines.push(`Backup P: ${backupAssignments.P || "—"}`);
+  lines.push(`Backup C: ${backupAssignments.C || "—"}`);
+
+  // Bench
+  const onField = new Set(Object.values(defenseAssignments).filter(Boolean));
+  const bench = players.filter(p =>
+    !onField.has(p.name) &&
+    p.name !== backupAssignments.P &&
+    p.name !== backupAssignments.C
+  ).map(p => p.name);
+  if (bench.length) lines.push(`Bench: ${bench.join(", ")}`);
+
+  lines.push("");
+
+  // ── BATTING ORDER ─────────────────────────────────────────
+  lines.push("── BATTING ORDER ──");
+  battingOrder.forEach((entry, idx) => {
+    const isDP = entry.role === "DP";
+    const isEP = entry.role === "EP";
+    const hitter = isDP && entry.flexName ? entry.flexName : entry.playerName;
+
+    let posText = "";
+    if (isEP) {
+      posText = "EP";
+    } else {
+      const slot = defSlotForPlayer(entry.playerName);
+      posText = slot ? defLabels[slot] : "";
+    }
+
+    let line = `${idx + 1}. ${hitter}`;
+    if (posText) line += ` (${posText})`;
+    if (isDP) line += ` / DP: ${entry.playerName}`;
+    lines.push(line);
+  });
+
+  return lines.join("\n");
+}
+
+// ============================================================
+//  SEND LINEUP VIA SMS
+// ============================================================
+function sendLineup() {
+  const body = encodeURIComponent(buildLineupText());
+
+  if (coaches.length === 1) {
+    // Single recipient — open directly
+    window.location.href = `sms:${coaches[0].phone}?body=${body}`;
+  } else {
+    // Multiple recipients — open each as a separate sms: link
+    // Most mobile browsers only support one number at a time,
+    // so we open the first and show a prompt for the rest.
+    coaches.forEach((coach, i) => {
+      setTimeout(() => {
+        window.open(`sms:${coach.phone}?body=${body}`, "_blank");
+      }, i * 600);
+    });
+  }
 }
 function switchTab(tabName) {
   document.querySelectorAll(".tab-panel").forEach(p => p.classList.remove("active"));
