@@ -1,0 +1,1678 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Softball Lineup Manager</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d1117;
+    --surface: #161b22;
+    --surface2: #1e2530;
+    --surface3: #252d38;
+    --border: #2d3748;
+    --accent: #f5a623;
+    --accent2: #e8572a;
+    --green: #3fb950;
+    --blue: #58a6ff;
+    --purple: #bc8cff;
+    --text: #e6edf3;
+    --text2: #8b949e;
+    --text3: #6e7681;
+    --red: #f85149;
+    --radius: 8px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+  }
+
+  /* HEADER */
+  header {
+    background: linear-gradient(135deg, #1a0a00 0%, #2d1200 50%, #1a0a00 100%);
+    border-bottom: 2px solid var(--accent);
+    padding: 0 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(
+      -45deg,
+      transparent,
+      transparent 20px,
+      rgba(245,166,35,0.03) 20px,
+      rgba(245,166,35,0.03) 40px
+    );
+  }
+  .header-left {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 16px 0;
+    position: relative;
+  }
+  .softball-icon {
+    width: 48px;
+    height: 48px;
+    flex-shrink: 0;
+  }
+  .app-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 2rem;
+    letter-spacing: 3px;
+    color: var(--accent);
+    line-height: 1;
+    text-shadow: 0 0 30px rgba(245,166,35,0.4);
+  }
+  .app-subtitle {
+    font-size: 0.7rem;
+    color: var(--text2);
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    margin-top: 2px;
+  }
+
+  /* TABS */
+  .tabs {
+    display: flex;
+    gap: 4px;
+    position: relative;
+  }
+  .tab-btn {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.1rem;
+    letter-spacing: 2px;
+    padding: 10px 28px;
+    border: none;
+    background: transparent;
+    color: var(--text2);
+    cursor: pointer;
+    border-radius: var(--radius) var(--radius) 0 0;
+    transition: all 0.2s;
+    position: relative;
+    top: 2px;
+  }
+  .tab-btn:hover { color: var(--text); background: rgba(255,255,255,0.05); }
+  .tab-btn.active {
+    color: var(--accent);
+    background: var(--bg);
+    border: 2px solid var(--accent);
+    border-bottom: 2px solid var(--bg);
+  }
+
+  /* MAIN */
+  main {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 28px 20px;
+  }
+
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  /* SECTION HEADERS */
+  .section-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.4rem;
+    letter-spacing: 3px;
+    color: var(--accent);
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .section-title::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(to right, var(--accent), transparent);
+  }
+
+  /* ── FIELD DIAGRAM ─────────────────────────────────────── */
+  .field-wrap {
+    position: relative;
+    width: 100%;
+    max-width: 780px;
+    margin: 0 auto 28px;
+    user-select: none;
+  }
+  /* Keeps the SVG background at a fixed aspect ratio */
+  .field-svg-bg {
+    width: 100%;
+    display: block;
+  }
+  /* Overlay sits exactly on top of the SVG */
+  .field-overlay {
+    position: absolute;
+    inset: 0;
+  }
+
+  /* Each position slot: label above, select below, centred on its anchor point */
+  .position-slot {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    transform: translate(-50%, -50%);
+    z-index: 10;
+  }
+  .position-label {
+    font-size: 0.58rem;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: #fff;
+    background: rgba(0,0,0,0.65);
+    padding: 2px 7px;
+    border-radius: 4px;
+    border: 1px solid rgba(255,255,255,0.15);
+    white-space: nowrap;
+    backdrop-filter: blur(2px);
+  }
+  .position-slot select {
+    width: 148px;
+    background: rgba(10,16,10,0.82);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.78rem;
+    padding: 5px 26px 5px 8px;
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%238b949e'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 8px center;
+    cursor: pointer;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    backdrop-filter: blur(4px);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.5);
+  }
+  .position-slot select:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 2px rgba(245,166,35,0.2);
+  }
+  .position-slot select.assigned {
+    border-color: var(--green);
+    color: #fff;
+  }
+  .position-slot select option.preferred      { color: var(--accent); }
+  .position-slot select option.alternate      { color: var(--blue);   }
+  .position-slot select option.other          { color: var(--text2);  }
+  .position-slot select option.already-assigned { color: var(--red); font-style: italic; }
+
+  /* DP/FLEX indicator */
+  .bat-hand-badge {
+    font-size: 0.6rem;
+    padding: 1px 5px;
+    border-radius: 3px;
+    font-weight: 700;
+    letter-spacing: 1px;
+  }
+  .bat-R { background: rgba(245,166,35,0.2); color: var(--accent); }
+  .bat-L { background: rgba(88,166,255,0.2); color: var(--blue); }
+  .bat-S { background: rgba(188,140,255,0.2); color: var(--purple); }
+
+  /* OFFENSIVE LINEUP */
+  .lineup-container {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  .lineup-header-row {
+    display: grid;
+    grid-template-columns: 32px 28px 1fr 80px 44px;
+    gap: 6px;
+    padding: 8px 14px;
+    background: var(--surface2);
+    border-bottom: 1px solid var(--border);
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--text3);
+  }
+
+  .lineup-row {
+    display: grid;
+    grid-template-columns: 32px 28px 1fr 80px 44px;
+    gap: 6px;
+    padding: 7px 14px;
+    border-bottom: 1px solid rgba(45,55,72,0.5);
+    align-items: center;
+    transition: background 0.15s;
+    cursor: grab;
+    user-select: none;
+    min-width: 0;
+  }
+  .lineup-row:last-child { border-bottom: none; }
+  .lineup-row:hover { background: var(--surface2); }
+  .lineup-row.dragging {
+    opacity: 0.4;
+    cursor: grabbing;
+  }
+  .lineup-row.drag-over {
+    background: rgba(245,166,35,0.08);
+    border-top: 2px solid var(--accent);
+  }
+
+  .role-cell {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    min-width: 0;
+  }
+
+  .dp-sub-label {
+    font-size: 0.68rem;
+    color: var(--green);
+    font-weight: 600;
+    letter-spacing: 0.3px;
+    margin-top: 1px;
+  }
+
+  .pos-badge {
+    font-size: 0.6rem;
+    font-weight: 700;
+    padding: 1px 6px;
+    border-radius: 3px;
+    background: var(--surface3);
+    color: var(--text2);
+    letter-spacing: 0.5px;
+  }
+  .pos-badge-field {
+    background: rgba(63,185,80,0.12);
+    color: var(--green);
+    border: 1px solid rgba(63,185,80,0.25);
+  }
+  .pos-badge-ep {
+    background: rgba(188,140,255,0.12);
+    color: var(--purple);
+    border: 1px solid rgba(188,140,255,0.25);
+  }
+
+  .bat-order-num {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.1rem;
+    color: var(--accent);
+    text-align: center;
+    line-height: 1;
+  }
+  .drag-handle {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    align-items: center;
+    justify-content: center;
+    opacity: 0.35;
+    transition: opacity 0.15s;
+  }
+  .lineup-row:hover .drag-handle { opacity: 0.8; }
+  .drag-handle span {
+    display: block;
+    width: 16px;
+    height: 2px;
+    background: var(--text2);
+    border-radius: 1px;
+  }
+
+  .player-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+    overflow: hidden;
+  }
+  .player-name-text {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .player-meta {
+    display: flex;
+    gap: 5px;
+    align-items: center;
+  }
+  .pos-badge {
+    font-size: 0.6rem;
+    font-weight: 700;
+    padding: 1px 6px;
+    border-radius: 3px;
+    background: var(--surface3);
+    color: var(--text2);
+    letter-spacing: 0.5px;
+  }
+
+  .lineup-select {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.75rem;
+    padding: 4px 22px 4px 6px;
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='5'%3E%3Cpath d='M0 0l4 5 4-5z' fill='%238b949e'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 6px center;
+    cursor: pointer;
+    width: 100%;
+    transition: border-color 0.2s;
+  }
+  .lineup-select:focus {
+    outline: none;
+    border-color: var(--accent);
+  }
+  .lineup-select.dp-select { border-color: var(--green); }
+  .lineup-select.ep-select { border-color: var(--purple); }
+  .lineup-select.flex-select { border-color: var(--blue); }
+
+  .bat-hand-cell {
+    display: flex;
+    justify-content: center;
+  }
+
+  /* Add player button */
+  .add-spot-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    padding: 12px;
+    background: transparent;
+    border: 1px dashed var(--border);
+    border-top: none;
+    border-radius: 0 0 12px 12px;
+    color: var(--text3);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.82rem;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .add-spot-btn:hover { background: var(--surface2); color: var(--accent); border-color: var(--accent); }
+
+  /* LEGEND */
+  .legend {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+  }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.72rem;
+    color: var(--text2);
+  }
+  .legend-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+  }
+
+  /* ROSTER PANEL */
+  .roster-sidebar {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 20px;
+  }
+  .roster-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 8px;
+    margin-top: 12px;
+  }
+  .roster-card {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 8px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .roster-card-name {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text);
+  }
+  .roster-card-positions {
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap;
+  }
+  .rc-badge {
+    font-size: 0.6rem;
+    padding: 1px 6px;
+    border-radius: 3px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+  }
+  .rc-pref { background: rgba(245,166,35,0.15); color: var(--accent); border: 1px solid rgba(245,166,35,0.3); }
+  .rc-alt  { background: rgba(88,166,255,0.12); color: var(--blue);   border: 1px solid rgba(88,166,255,0.25); }
+
+  .position-slot select.conflict {
+    border-color: var(--red) !important;
+    box-shadow: 0 0 0 2px rgba(248,81,73,0.25);
+    color: var(--red);
+  }
+
+  /* Print / Export bar */
+  .action-bar {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+  }
+  .btn {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.82rem;
+    font-weight: 600;
+    padding: 9px 18px;
+    border-radius: var(--radius);
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s;
+    letter-spacing: 0.5px;
+  }
+  .btn-primary {
+    background: var(--accent);
+    color: #000;
+  }
+  .btn-primary:hover { background: #e09400; }
+  .btn-ghost {
+    background: var(--surface2);
+    color: var(--text);
+    border: 1px solid var(--border);
+  }
+  .btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* ── DEFENSE LAYOUT ─────────────────────────────────────── */
+  .defense-layout {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    margin-bottom: 28px;
+  }
+  .defense-field-col {
+    width: 100%;
+  }
+  .defense-status-col {
+    width: 100%;
+  }
+
+  /* ── STATUS PANEL ───────────────────────────────────────── */
+  .status-panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+  .status-col {
+    display: flex;
+    flex-direction: column;
+    border-right: 1px solid var(--border);
+  }
+  .status-col:last-child { border-right: none; }
+  .status-col-backups {
+    flex: 0 0 220px;
+  }
+  .status-col-bench {
+    flex: 1 1 200px;
+  }
+  .status-section {
+    flex: 1 1 auto;
+    border-bottom: 1px solid var(--border);
+    padding: 12px 16px;
+  }
+  .status-section:last-child { border-bottom: none; }
+  .status-col-backups .status-section { border-bottom: 1px solid var(--border); }
+  .status-col-backups .status-section:last-child { border-bottom: none; }
+  .status-section-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--text2);
+    margin-bottom: 10px;
+  }
+  .status-icon {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    flex-shrink: 0;
+  }
+  .status-players {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .status-player {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 5px 9px;
+    flex-wrap: wrap;
+  }
+  .status-player-name {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--text);
+    flex: 1;
+    min-width: 80px;
+  }
+  .status-pos-badge {
+    font-size: 0.58rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    padding: 1px 6px;
+    border-radius: 3px;
+    background: var(--surface3);
+    color: var(--text3);
+    white-space: nowrap;
+  }
+  .status-empty {
+    font-size: 0.8rem;
+    color: var(--text3);
+    font-style: italic;
+  }
+  /* Backup dropdowns get full width inside their column */
+  .status-col-backups .lineup-select {
+    width: 100%;
+  }
+  @media (max-width: 600px) {
+    .status-col-backups { flex: 1 1 100%; border-right: none; border-bottom: 1px solid var(--border); }
+    .status-col-bench   { flex: 1 1 100%; }
+  }
+
+  @media (max-width: 700px) {
+    .lineup-header-row, .lineup-row {
+      grid-template-columns: 28px 28px 1fr 100px;
+    }
+    .bat-hand-cell { display: none; }
+    header { flex-direction: column; align-items: flex-start; padding: 12px 16px; }
+    .tabs { width: 100%; }
+  }
+
+  /* ── SAVE / VIEW MODE ───────────────────────────────────── */
+  .saved-text {
+    display: inline-block;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--text);
+    padding: 5px 8px;
+    background: rgba(63,185,80,0.08);
+    border: 1px solid rgba(63,185,80,0.2);
+    border-radius: var(--radius);
+    width: 100%;
+    min-height: 30px;
+  }
+  .saved-text.empty {
+    color: var(--text3);
+    font-style: italic;
+    font-weight: 400;
+    background: transparent;
+    border-color: transparent;
+  }
+
+  /* Saved offense row elements */
+  .saved-static-row { cursor: default; }
+  .saved-player-line {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: nowrap;
+    overflow: hidden;
+  }
+  .saved-pos-text {
+    font-size: 0.68rem;
+    color: var(--green);
+    font-weight: 600;
+    margin-top: 1px;
+  }
+  .saved-dp-name {
+    font-size: 0.72rem;
+    color: var(--green);
+    font-weight: 500;
+    white-space: nowrap;
+  }
+  .saved-role-tag {
+    font-size: 0.6rem;
+    font-weight: 800;
+    padding: 1px 5px;
+    border-radius: 3px;
+    white-space: nowrap;
+    flex-shrink: 0;
+    letter-spacing: 0.5px;
+  }
+  .saved-role-dp { background: rgba(63,185,80,0.15); color: var(--green); border: 1px solid rgba(63,185,80,0.3); }
+  .saved-role-ep { background: rgba(188,140,255,0.15); color: var(--purple); border: 1px solid rgba(188,140,255,0.3); }
+
+  .btn-save {
+    background: var(--green);
+    color: #000;
+    font-weight: 700;
+  }
+  .btn-save:hover { background: #35a344; }
+  .btn-edit {
+    background: var(--blue);
+    color: #000;
+    font-weight: 700;
+  }
+  .btn-edit:hover { background: #4090e0; }
+
+  /* Hide legend, drag handles, and reset button in saved mode */
+  body.saved-mode .legend { display: none; }
+  body.saved-mode .drag-handle { display: none; }
+  body.saved-mode .action-bar .btn-primary { display: none; }
+  body.saved-mode .action-bar .btn-ghost { display: none; }
+  body.saved-mode .add-spot-btn { display: none; }
+  body.saved-mode .lineup-row { cursor: default; }
+  body.saved-mode .bat-order-num { color: var(--accent); }
+
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+  .tab-panel.active { animation: fadeIn 0.25s ease; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-left">
+    <svg class="softball-icon" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="24" cy="24" r="22" fill="#f5f0e8" stroke="#d4a847" stroke-width="1.5"/>
+      <path d="M10 18 Q14 22 10 30" stroke="#e8572a" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+      <path d="M10 18 Q7 22 10 30" stroke="#e8572a" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+      <path d="M38 18 Q42 22 38 30" stroke="#e8572a" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+      <path d="M38 18 Q34 22 38 30" stroke="#e8572a" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+      <path d="M18 10 Q22 14 30 10" stroke="#e8572a" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+      <path d="M18 10 Q22 7 30 10" stroke="#e8572a" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+      <path d="M18 38 Q22 42 30 38" stroke="#e8572a" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+      <path d="M18 38 Q22 34 30 38" stroke="#e8572a" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+    </svg>
+    <div>
+      <div class="app-title">Lineup Manager</div>
+      <div class="app-subtitle">Softball · Field & Batting</div>
+    </div>
+  </div>
+  <div class="tabs">
+    <button class="tab-btn active" onclick="switchTab('defense')">⚾ Defense</button>
+    <button class="tab-btn" onclick="switchTab('offense')">🥎 Offense</button>
+  </div>
+</header>
+
+<main>
+
+<!-- ===================== DEFENSE TAB ===================== -->
+<div id="tab-defense" class="tab-panel active">
+
+  <div class="action-bar">
+    <button class="btn btn-primary" onclick="clearDefense()">Reset to Defaults</button>
+    <button class="btn btn-save" onclick="saveLineup()">💾 Save</button>
+    <button class="btn btn-edit" onclick="editLineup()" style="display:none;">✏️ Edit</button>
+    <button class="btn btn-ghost" onclick="window.print()">Print</button>
+  </div>
+
+  <div class="section-title">Defensive Positions</div>
+
+  <div class="legend">
+    <div class="legend-item"><div class="legend-dot" style="background:var(--accent)"></div> Preferred Position</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--blue)"></div> Alternate Position</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--text3)"></div> Other Players</div>
+  </div>
+
+  <!-- Field + Status side-by-side -->
+  <div class="defense-layout">
+
+    <!-- LEFT: field diagram -->
+    <div class="defense-field-col">
+  <!--
+    SVG viewBox: 800 × 720 (viewed from behind home plate, CF at top)
+    All % positions are relative to the rendered SVG dimensions.
+    Coordinate reference (% of 800w × 720h):
+      Home plate  : 50%, 94%
+      Pitcher     : 50%, 62%
+      1B          : 72%, 74%
+      2B          : 50%, 51%
+      3B          : 28%, 74%
+      SS          : 36%, 57%
+      LF          : 20%, 32%
+      CF          : 50%, 16%
+      RF          : 80%, 32%
+      Catcher     : 50%, 100% (just below home — shown at 50%,97%)
+  -->
+  <div class="field-wrap">
+
+    <!-- SVG Background Field -->
+    <svg class="field-svg-bg" viewBox="0 0 800 720" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <!-- Outfield grass gradient -->
+        <radialGradient id="gGrass" cx="50%" cy="85%" r="70%">
+          <stop offset="0%"  stop-color="#1e4a1e"/>
+          <stop offset="60%" stop-color="#153a15"/>
+          <stop offset="100%" stop-color="#0e260e"/>
+        </radialGradient>
+        <!-- Infield dirt -->
+        <radialGradient id="gDirt" cx="50%" cy="60%" r="40%">
+          <stop offset="0%"  stop-color="#6b4226"/>
+          <stop offset="100%" stop-color="#4a2e18"/>
+        </radialGradient>
+        <!-- Grass stripe overlay for realism -->
+        <linearGradient id="gStripe" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%"  stop-color="rgba(255,255,255,0.03)"/>
+          <stop offset="50%" stop-color="rgba(0,0,0,0.04)"/>
+          <stop offset="100%" stop-color="rgba(255,255,255,0.03)"/>
+        </linearGradient>
+        <clipPath id="fieldClip">
+          <rect width="800" height="720"/>
+        </clipPath>
+      </defs>
+
+      <!-- Background (sky/fence) -->
+      <rect width="800" height="720" fill="#0a1a0a"/>
+
+      <!-- Warning track arc (outermost) -->
+      <path d="M 60 720 A 580 580 0 0 1 740 720" fill="#5a3e2a" opacity="0.6"/>
+
+      <!-- Outfield grass wedge -->
+      <path d="M 400 680 L 60 720 A 560 560 0 0 1 740 720 Z" fill="url(#gGrass)"/>
+
+      <!-- Grass mowing stripes (subtle) -->
+      <g opacity="0.07" clip-path="url(#fieldClip)">
+        <rect x="0"   y="0" width="67" height="720" fill="#fff"/>
+        <rect x="134" y="0" width="67" height="720" fill="#000"/>
+        <rect x="267" y="0" width="67" height="720" fill="#fff"/>
+        <rect x="400" y="0" width="67" height="720" fill="#000"/>
+        <rect x="533" y="0" width="67" height="720" fill="#fff"/>
+        <rect x="667" y="0" width="67" height="720" fill="#000"/>
+      </g>
+
+      <!-- Infield dirt arc (large quarter-circle) -->
+      <path d="M 185 680 Q 185 440 400 440 Q 615 440 615 680 Z" fill="url(#gDirt)"/>
+
+      <!-- Infield grass (inner circle) -->
+      <circle cx="400" cy="540" r="115" fill="#1a4020"/>
+
+      <!-- Foul lines -->
+      <line x1="400" y1="680" x2="60"  y2="110" stroke="rgba(255,255,255,0.35)" stroke-width="2"/>
+      <line x1="400" y1="680" x2="740" y2="110" stroke="rgba(255,255,255,0.35)" stroke-width="2"/>
+
+      <!-- Outfield fence arc -->
+      <path d="M 75 710 A 555 555 0 0 1 725 710" fill="none" stroke="#4a7a30" stroke-width="6" opacity="0.7"/>
+      <!-- Fence top highlight -->
+      <path d="M 75 710 A 555 555 0 0 1 725 710" fill="none" stroke="rgba(255,255,255,0.12)" stroke-width="2"/>
+
+      <!-- Warning track line -->
+      <path d="M 95 715 A 535 535 0 0 1 705 715" fill="none" stroke="#7a5535" stroke-width="12" opacity="0.4"/>
+
+      <!-- Pitcher's circle -->
+      <circle cx="400" cy="505" r="20" fill="#7a5535" stroke="rgba(255,255,255,0.25)" stroke-width="1.5"/>
+
+      <!-- Pitcher's rubber -->
+      <rect x="393" y="500" width="14" height="5" rx="2" fill="rgba(255,255,255,0.7)"/>
+
+      <!-- Diamond basepath lines -->
+      <!-- Home to 1B -->
+      <line x1="400" y1="660" x2="575" y2="565" stroke="rgba(255,255,255,0.3)" stroke-width="1.5"/>
+      <!-- 1B to 2B -->
+      <line x1="575" y1="565" x2="400" y2="470" stroke="rgba(255,255,255,0.3)" stroke-width="1.5"/>
+      <!-- 2B to 3B -->
+      <line x1="400" y1="470" x2="225" y2="565" stroke="rgba(255,255,255,0.3)" stroke-width="1.5"/>
+      <!-- 3B to Home -->
+      <line x1="225" y1="565" x2="400" y2="660" stroke="rgba(255,255,255,0.3)" stroke-width="1.5"/>
+
+      <!-- Base bags -->
+      <!-- 1B -->
+      <rect x="565" y="555" width="20" height="20" rx="2" fill="white" transform="rotate(45,575,565)"/>
+      <!-- 2B -->
+      <rect x="390" y="460" width="20" height="20" rx="2" fill="white" transform="rotate(45,400,470)"/>
+      <!-- 3B -->
+      <rect x="215" y="555" width="20" height="20" rx="2" fill="white" transform="rotate(45,225,565)"/>
+
+      <!-- Home plate (pentagon) -->
+      <polygon points="400,680 418,665 418,648 382,648 382,665" fill="white"/>
+
+      <!-- Batter's boxes -->
+      <rect x="360" y="648" width="18" height="34" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="1.5"/>
+      <rect x="422" y="648" width="18" height="34" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="1.5"/>
+
+      <!-- Catcher's box -->
+      <rect x="370" y="680" width="60" height="28" fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="1.2"/>
+
+      <!-- Infield grass edge arc -->
+      <path d="M 220 610 Q 310 455 400 445 Q 490 455 580 610" fill="none" stroke="rgba(100,200,100,0.2)" stroke-width="1"/>
+
+    </svg>
+
+    <!-- ═══ POSITION DROPDOWNS (absolutely positioned over SVG) ═══ -->
+    <!-- Positions expressed as % of field-wrap width/height via inline style -->
+    <div class="field-overlay">
+
+      <!-- Center Field: 50% x, 16% y -->
+      <div class="position-slot" id="slot-CF" style="left:50%;top:15%;">
+        <div class="position-label">Center Field</div>
+        <select onchange="onDefenseChange('CF', this.value)"><option value="">— Unassigned —</option></select>
+      </div>
+
+      <!-- Left Field: 18% x, 31% y -->
+      <div class="position-slot" id="slot-LF" style="left:19%;top:30%;">
+        <div class="position-label">Left Field</div>
+        <select onchange="onDefenseChange('LF', this.value)"><option value="">— Unassigned —</option></select>
+      </div>
+
+      <!-- Right Field: 82% x, 31% y -->
+      <div class="position-slot" id="slot-RF" style="left:81%;top:30%;">
+        <div class="position-label">Right Field</div>
+        <select onchange="onDefenseChange('RF', this.value)"><option value="">— Unassigned —</option></select>
+      </div>
+
+      <!-- Shortstop: 34% x, 52% y (between 3B and 2B, slightly toward LF) -->
+      <div class="position-slot" id="slot-SS" style="left:34%;top:51%;">
+        <div class="position-label">Shortstop</div>
+        <select onchange="onDefenseChange('SS', this.value)"><option value="">— Unassigned —</option></select>
+      </div>
+
+      <!-- Second Base: 50% x, 44% y (just above 2B bag) -->
+      <div class="position-slot" id="slot-2B" style="left:62%;top:51%;">
+        <div class="position-label">2nd Base</div>
+        <select onchange="onDefenseChange('2B', this.value)"><option value="">— Unassigned —</option></select>
+      </div>
+
+      <!-- Pitcher: 50% x, 63% y -->
+      <div class="position-slot" id="slot-P" style="left:50%;top:62%;">
+        <div class="position-label">Pitcher</div>
+        <select onchange="onDefenseChange('P', this.value)"><option value="">— Unassigned —</option></select>
+      </div>
+
+      <!-- Third Base: 26% x, 73% y -->
+      <div class="position-slot" id="slot-3B" style="left:26%;top:73%;">
+        <div class="position-label">3rd Base</div>
+        <select onchange="onDefenseChange('3B', this.value)"><option value="">— Unassigned —</option></select>
+      </div>
+
+      <!-- First Base: 74% x, 73% y -->
+      <div class="position-slot" id="slot-1B" style="left:74%;top:73%;">
+        <div class="position-label">1st Base</div>
+        <select onchange="onDefenseChange('1B', this.value)"><option value="">— Unassigned —</option></select>
+      </div>
+
+      <!-- Catcher: 50% x, 92% y -->
+      <div class="position-slot" id="slot-C" style="left:50%;top:92%;">
+        <div class="position-label">Catcher</div>
+        <select onchange="onDefenseChange('C', this.value)"><option value="">— Unassigned —</option></select>
+      </div>
+
+    </div><!-- /field-overlay -->
+  </div><!-- /field-wrap -->
+    </div><!-- /defense-field-col -->
+
+    <!-- BELOW FIELD: two-column status panel -->
+    <div class="status-panel">
+
+      <!-- Left column: Backup Pitcher + Backup Catcher dropdowns -->
+      <div class="status-col status-col-backups">
+
+        <div class="status-section">
+          <div class="status-section-header">
+            <span class="status-icon" style="background:rgba(232,87,42,0.2);color:#e8572a;">⚾</span>
+            Backup Pitcher
+          </div>
+          <select class="lineup-select" id="backup-p-select" onchange="onBackupChange('P', this.value)">
+            <option value="">— None —</option>
+          </select>
+        </div>
+
+        <div class="status-section">
+          <div class="status-section-header">
+            <span class="status-icon" style="background:rgba(88,166,255,0.2);color:#58a6ff;">🥎</span>
+            Backup Catcher
+          </div>
+          <select class="lineup-select" id="backup-c-select" onchange="onBackupChange('C', this.value)">
+            <option value="">— None —</option>
+          </select>
+        </div>
+
+      </div>
+
+      <!-- Right column: Bench -->
+      <div class="status-col status-col-bench">
+        <div class="status-section" style="height:100%;">
+          <div class="status-section-header">
+            <span class="status-icon" style="background:rgba(139,148,158,0.15);color:#8b949e;">🪑</span>
+            Bench
+          </div>
+          <div class="status-players" id="status-bench"></div>
+        </div>
+      </div>
+
+    </div><!-- /status-panel -->
+    </div><!-- /defense-status-col -->
+
+  </div><!-- /defense-layout -->
+</div>
+
+
+<!-- ===================== OFFENSE TAB ===================== -->
+<div id="tab-offense" class="tab-panel">
+
+  <div class="action-bar">
+    <button class="btn btn-primary" onclick="addBattingSpot()">+ Add EP Spot</button>
+    <button class="btn btn-save" onclick="saveLineup()">💾 Save</button>
+    <button class="btn btn-edit" onclick="editLineup()" style="display:none;">✏️ Edit</button>
+    <button class="btn btn-ghost" onclick="window.print()">Print</button>
+  </div>
+
+  <div class="section-title">Batting Order</div>
+  <p style="font-size:0.78rem; color:var(--text2); margin-bottom:14px;">Drag rows to reorder · Select DP to designate a FLEX hitter · Defense tab drives this list</p>
+
+  <div class="lineup-container">
+    <div class="lineup-header-row">
+      <div>#</div>
+      <div></div>
+      <div>Player / Position</div>
+      <div>Role</div>
+      <div class="bat-hand-cell">Bats</div>
+    </div>
+    <div id="batting-list"></div>
+  </div>
+  <button class="add-spot-btn" onclick="addBattingSpot()">＋ Add EP Spot</button>
+
+</div>
+</main>
+
+<script>
+// ============================================================
+//  PLAYER DATA
+// ============================================================
+// startPos values: a DEF_POSITIONS key ("3B","1B","P","C","SS","2B","LF","CF","RF"),
+//   or "Backup Pitcher", "Backup Catcher", "Bench"
+const players = [
+  { name: "Abigail B.",   pref: "3B", alt: "SS", bats: "R", startPos: "3B"             },
+  { name: "Aubrey L.",    pref: "1B", alt: "P",  bats: "R", startPos: "1B"             },
+  { name: "Lilyana A.",   pref: "1B", alt: "P",  bats: "R", startPos: "Bench"          },
+  { name: "Madelyn L.",   pref: "P",  alt: "1B", bats: "R", startPos: "Bench"          },
+  { name: "Genesis G.",   pref: "SS", alt: "OF", bats: "R", startPos: "Bench"          },
+  { name: "Ariella B.",   pref: "2B", alt: "OF", bats: "R", startPos: "LF"             },
+  { name: "Kenlee B.",    pref: "2B", alt: "P",  bats: "S", startPos: "2B"             },
+  { name: "Raegan H.",    pref: "SS", alt: "OF", bats: "R", startPos: "SS"             },
+  { name: "Gabriella P.", pref: "1B", alt: "P",  bats: "R", startPos: "Backup Pitcher" },
+  { name: "Kyra B.",      pref: "2B", alt: "P",  bats: "R", startPos: "Bench"          },
+  { name: "Cavana S.",    pref: "3B", alt: "OF", bats: "R", startPos: "RF"             },
+  { name: "Leighton G.",  pref: "C",  alt: "OF", bats: "R", startPos: "CF"             },
+  { name: "Kayla C.",     pref: "C",  alt: "3B", bats: "L", startPos: "Backup Catcher" },
+  { name: "Miah R.",      pref: "C",  alt: "1B", bats: "R", startPos: "C"              },
+  { name: "Monica B.",    pref: "2B", alt: "P",  bats: "R", startPos: "Bench"          },
+];
+
+// Defensive positions and which "OF" position they map to
+const DEF_POSITIONS = [
+  { key: "P",  label: "Pitcher"     },
+  { key: "C",  label: "Catcher"     },
+  { key: "1B", label: "First Base"  },
+  { key: "2B", label: "Second Base" },
+  { key: "3B", label: "Third Base"  },
+  { key: "SS", label: "Shortstop"   },
+  { key: "LF", label: "Left Field"  },
+  { key: "CF", label: "Center Field"},
+  { key: "RF", label: "Right Field" },
+];
+
+// Outfield positions (LF, CF, RF) should prefer outfield players
+const OF_SLOTS = ["LF", "CF", "RF"];
+
+// Maps positional abbreviation in players data to slot keys
+function playerMatchesSlot(player, slotKey) {
+  const pref = player.pref;
+  const alt  = player.alt;
+  if (slotKey === "LF" || slotKey === "CF" || slotKey === "RF") {
+    return pref === "OF" || alt === "OF";
+  }
+  return pref === slotKey || alt === slotKey;
+}
+
+// ============================================================
+//  DEFENSE STATE
+// ============================================================
+// Field slot keys for starters
+const FIELD_SLOTS = new Set(["P","C","1B","2B","3B","SS","LF","CF","RF"]);
+
+// Build default assignments from startPos
+function defaultAssignments() {
+  const d = {};
+  players.forEach(p => {
+    if (FIELD_SLOTS.has(p.startPos)) d[p.startPos] = p.name;
+  });
+  return d;
+}
+
+const defenseAssignments = defaultAssignments();
+
+function buildDefenseDropdowns() {
+  DEF_POSITIONS.forEach(pos => {
+    const slot = document.querySelector(`#slot-${pos.key} select`);
+    if (!slot) return;
+    rebuildSlotOptions(slot, pos.key);
+    slot.value = defenseAssignments[pos.key] || "";
+  });
+}
+
+function rebuildSlotOptions(select, slotKey) {
+  select.innerHTML = '<option value="">— Unassigned —</option>';
+
+  const preferred = [];
+  const alternates = [];
+  const others = [];
+
+  // Build a map of playerName -> slotKey for all currently assigned slots (excluding this slot)
+  const assignedElsewhere = {};
+  DEF_POSITIONS.forEach(pos => {
+    if (pos.key !== slotKey && defenseAssignments[pos.key]) {
+      assignedElsewhere[defenseAssignments[pos.key]] = pos.key;
+    }
+  });
+
+  // ── PITCHER: pitchers-only flat list, no optgroups ──────────
+  if (slotKey === "P") {
+    players
+      .filter(p => p.pref === "P" || p.alt === "P")
+      .forEach(p => {
+        const o = document.createElement("option");
+        o.value = p.name;
+        const elseSlot = assignedElsewhere[p.name];
+        if (elseSlot) {
+          const slotLabel = DEF_POSITIONS.find(d => d.key === elseSlot)?.label || elseSlot;
+          o.textContent = p.name + " ★ " + slotLabel;
+          o.className = "already-assigned";
+          o.style.color = "#f85149";
+        } else {
+          o.textContent = p.name;
+        }
+        select.appendChild(o);
+      });
+    const assignedVal = defenseAssignments[slotKey] || "";
+    select.value = assignedVal;
+    select.className = select.value ? "assigned" : "";
+    return;
+  }
+  // ── All other positions: preferred / alternate / others ──────
+
+  players.forEach(p => {
+    const isOFSlot = (slotKey === "LF" || slotKey === "CF" || slotKey === "RF");
+    const isPref = isOFSlot ? (p.pref === "OF" || p.alt === "OF") : p.pref === slotKey;
+    const isAlt  = isOFSlot ? false : p.alt === slotKey;
+
+    if (isPref) preferred.push(p);
+    else if (isAlt) alternates.push(p);
+    else others.push(p);
+  });
+
+  function makeOption(p) {
+    const o = document.createElement("option");
+    o.value = p.name;
+    const elseSlot = assignedElsewhere[p.name];
+    if (elseSlot) {
+      const slotLabel = DEF_POSITIONS.find(d => d.key === elseSlot)?.label || elseSlot;
+      o.textContent = p.name + " ★ " + slotLabel;
+      o.className = "already-assigned";
+      o.style.color = "#f85149";
+    } else {
+      o.textContent = p.name;
+    }
+    return o;
+  }
+
+  if (preferred.length) {
+    const og = document.createElement("optgroup");
+    og.label = "★ Preferred";
+    preferred.forEach(p => {
+      const o = makeOption(p);
+      if (!assignedElsewhere[p.name]) o.className = "preferred";
+      og.appendChild(o);
+    });
+    select.appendChild(og);
+  }
+  if (alternates.length) {
+    const og = document.createElement("optgroup");
+    og.label = "◇ Alternate";
+    alternates.forEach(p => {
+      const o = makeOption(p);
+      if (!assignedElsewhere[p.name]) o.className = "alternate";
+      og.appendChild(o);
+    });
+    select.appendChild(og);
+  }
+  if (others.length) {
+    const og = document.createElement("optgroup");
+    og.label = "· Other Players";
+    others.forEach(p => {
+      const o = makeOption(p);
+      if (!assignedElsewhere[p.name]) o.className = "other";
+      og.appendChild(o);
+    });
+    select.appendChild(og);
+  }
+
+  // Restore assignment value for this slot
+  const assignedVal = defenseAssignments[slotKey] || "";
+  select.value = assignedVal;
+  select.className = select.value ? "assigned" : "";
+}
+
+function onDefenseChange(slotKey, playerName) {
+  defenseAssignments[slotKey] = playerName;
+
+  // If the new field starter matches the current backup, clear the backup
+  if (slotKey === "P" && playerName && playerName === backupAssignments.P) backupAssignments.P = "";
+  if (slotKey === "C" && playerName && playerName === backupAssignments.C) backupAssignments.C = "";
+
+  DEF_POSITIONS.forEach(pos => {
+    const slot = document.querySelector(`#slot-${pos.key} select`);
+    if (slot) rebuildSlotOptions(slot, pos.key);
+  });
+  checkConflicts();
+  buildStatusPanel();
+  syncBattingOrderToDefense();
+}
+
+function checkConflicts() {
+  // Count how many slots each player appears in
+  const playerSlots = {};
+  DEF_POSITIONS.forEach(pos => {
+    const v = defenseAssignments[pos.key];
+    if (v) {
+      if (!playerSlots[v]) playerSlots[v] = [];
+      playerSlots[v].push(pos.key);
+    }
+  });
+
+  // Apply or remove .conflict class on each dropdown
+  DEF_POSITIONS.forEach(pos => {
+    const sel = document.querySelector(`#slot-${pos.key} select`);
+    if (!sel) return;
+    const assigned = defenseAssignments[pos.key];
+    const isDupe = assigned && playerSlots[assigned] && playerSlots[assigned].length > 1;
+    if (isDupe) {
+      sel.classList.add("conflict");
+      sel.classList.remove("assigned");
+    } else {
+      sel.classList.remove("conflict");
+      if (assigned) sel.classList.add("assigned");
+    }
+  });
+}
+
+function clearDefense() {
+  const defaults = defaultAssignments();
+  DEF_POSITIONS.forEach(pos => {
+    defenseAssignments[pos.key] = defaults[pos.key] || "";
+  });
+  DEF_POSITIONS.forEach(pos => {
+    const slot = document.querySelector(`#slot-${pos.key} select`);
+    if (slot) rebuildSlotOptions(slot, pos.key);
+  });
+  // Reset backups to original startPos defaults
+  backupAssignments.P = "";
+  backupAssignments.C = "";
+  players.forEach(p => {
+    if (p.startPos === "Backup Pitcher") backupAssignments.P = p.name;
+    if (p.startPos === "Backup Catcher") backupAssignments.C = p.name;
+  });
+  buildStatusPanel();
+  syncBattingOrderToDefense();
+}
+
+// ============================================================
+//  BACKUP ASSIGNMENTS  (separate from the 9 field slots)
+// ============================================================
+const backupAssignments = { P: "", C: "" };
+
+function onBackupChange(role, playerName) {
+  backupAssignments[role] = playerName;
+  buildStatusPanel();
+}
+
+// ============================================================
+//  STATUS PANEL
+// ============================================================
+function buildStatusPanel() {
+  const onField = new Set(Object.values(defenseAssignments).filter(Boolean));
+  const starterP = defenseAssignments["P"] || "";
+  const starterC = defenseAssignments["C"] || "";
+
+  // Auto-clear backup if it conflicts with the field starter
+  if (backupAssignments.P && backupAssignments.P === starterP) backupAssignments.P = "";
+  if (backupAssignments.C && backupAssignments.C === starterC) backupAssignments.C = "";
+
+  // ── Backup Pitcher dropdown ────────────────────────────────
+  const bpSel = document.getElementById("backup-p-select");
+  if (bpSel) {
+    bpSel.innerHTML = '<option value="">— None —</option>';
+    players
+      .filter(p => (p.pref === "P" || p.alt === "P") && p.name !== starterP)
+      .forEach(p => {
+        const o = document.createElement("option");
+        o.value = p.name;
+        o.textContent = p.name;
+        if (p.name === backupAssignments.P) o.selected = true;
+        bpSel.appendChild(o);
+      });
+    bpSel.value = backupAssignments.P || "";
+  }
+
+  // ── Backup Catcher dropdown ────────────────────────────────
+  const bcSel = document.getElementById("backup-c-select");
+  if (bcSel) {
+    bcSel.innerHTML = '<option value="">— None —</option>';
+    players
+      .filter(p => (p.pref === "C" || p.alt === "C") && p.name !== starterC)
+      .forEach(p => {
+        const o = document.createElement("option");
+        o.value = p.name;
+        o.textContent = p.name;
+        if (p.name === backupAssignments.C) o.selected = true;
+        bcSel.appendChild(o);
+      });
+    bcSel.value = backupAssignments.C || "";
+  }
+
+  // ── Bench: everyone not on the field, not backup P/C ──────
+  const benchPlayers = players.filter(p =>
+    !onField.has(p.name) &&
+    p.name !== backupAssignments.P &&
+    p.name !== backupAssignments.C
+  );
+
+  const benchEl = document.getElementById("status-bench");
+  if (benchEl) {
+    benchEl.innerHTML = benchPlayers.length
+      ? benchPlayers.map(p => {
+          const batBadge = p.bats === "L" ? `<span class="bat-hand-badge bat-L">L</span>`
+                         : p.bats === "S" ? `<span class="bat-hand-badge bat-S">SW</span>`
+                         :                  `<span class="bat-hand-badge bat-R">R</span>`;
+          return `<div class="status-player">
+                    <span class="status-player-name">${p.name}</span>
+                    ${batBadge}
+                  </div>`;
+        }).join("")
+      : `<span class="status-empty">—</span>`;
+  }
+}
+
+function posLabel(key) {
+  const map = { P:"Pitcher", C:"Catcher", "1B":"1st", "2B":"2nd", "3B":"3rd", SS:"SS", OF:"Outfield" };
+  return map[key] || key;
+}
+
+// ============================================================
+//  OFFENSE / BATTING ORDER
+// ============================================================
+
+// Full label map used on offense card
+const POS_FULL = {
+  P:"Pitcher", C:"Catcher", "1B":"1st Base", "2B":"2nd Base",
+  "3B":"3rd Base", SS:"Shortstop", LF:"Left Field", CF:"Center Field", RF:"Right Field"
+};
+
+// Build initial batting order from whoever is currently on the defense field.
+// Each entry: { id, playerName, role, flexName }
+//   role: "Regular" | "DP" | "EP"
+//   flexName: name of the FLEX hitter when role === "DP" (else "")
+function buildInitialBattingOrder() {
+  const order = [];
+  Object.entries(defenseAssignments).forEach(([slot, name]) => {
+    if (name) order.push({ id: slot, playerName: name, role: "Regular", flexName: "" });
+  });
+  return order;
+}
+
+let battingOrder = buildInitialBattingOrder();
+let dragSrcIdx = null;
+
+// Called whenever defense changes — adds/removes players to mirror the field,
+// preserving existing role assignments where possible.
+function syncBattingOrderToDefense() {
+  const onField = new Set(
+    Object.values(defenseAssignments).filter(Boolean)
+  );
+
+  // Remove players no longer on the field (keep EPs — they have no defense slot)
+  battingOrder = battingOrder.filter(e => e.role === "EP" || onField.has(e.playerName));
+
+  // Add any new field players not yet in the order
+  const inOrder = new Set(battingOrder.map(e => e.playerName));
+  onField.forEach(name => {
+    if (!inOrder.has(name)) {
+      battingOrder.push({ id: Date.now() + Math.random(), playerName: name, role: "Regular", flexName: "" });
+    }
+  });
+
+  buildBattingList();
+}
+
+// Look up the defensive slot key for a player by name
+function defSlotForPlayer(playerName) {
+  for (const [slot, name] of Object.entries(defenseAssignments)) {
+    if (name === playerName) return slot;
+  }
+  return null;
+}
+
+// Look up player object by name
+function playerByName(name) {
+  return players.find(p => p.name === name) || null;
+}
+
+function buildBattingList() {
+  const list = document.getElementById("batting-list");
+  list.innerHTML = "";
+
+  battingOrder.forEach((entry, idx) => {
+    const row = document.createElement("div");
+    row.className = "lineup-row";
+    row.draggable = true;
+    row.dataset.idx = idx;
+
+    // --- Determine display based on role ---
+    const isDP  = entry.role === "DP";
+    const isEP  = entry.role === "EP";
+
+    // The hitter shown on the left: FLEX player (if DP), otherwise the player themselves
+    const hitterName = isDP && entry.flexName ? entry.flexName : entry.playerName;
+    const hitterObj  = playerByName(hitterName);
+
+    // Defensive position badge — pulled from actual field assignments
+    let defBadge = "";
+    if (isDP) {
+      // DP plays defense; show their slot
+      const slot = defSlotForPlayer(entry.playerName);
+      defBadge = slot ? `<span class="pos-badge pos-badge-field">${POS_FULL[slot] || slot}</span>` : "";
+    } else if (isEP) {
+      defBadge = `<span class="pos-badge pos-badge-ep">No Defense</span>`;
+    } else {
+      const slot = defSlotForPlayer(entry.playerName);
+      defBadge = slot ? `<span class="pos-badge pos-badge-field">${POS_FULL[slot] || slot}</span>` : "";
+    }
+
+    // Bat hand badge
+    const batHand = !hitterObj ? "" :
+      hitterObj.bats === "L" ? `<span class="bat-hand-badge bat-L">L</span>` :
+      hitterObj.bats === "S" ? `<span class="bat-hand-badge bat-S">SW</span>` :
+                               `<span class="bat-hand-badge bat-R">R</span>`;
+
+    // DP sub-label shown below the FLEX name
+    const dpSubLabel = isDP
+      ? `<div class="dp-sub-label">DP: ${entry.playerName}</div>`
+      : "";
+
+    row.innerHTML = `
+      <div class="bat-order-num">${idx + 1}</div>
+      <div class="drag-handle"><span></span><span></span><span></span></div>
+      <div class="player-info">
+        <div class="player-name-text">${hitterName || '<span style="color:var(--text3);font-style:italic">Select FLEX…</span>'}</div>
+        ${dpSubLabel}
+        <div class="player-meta">${defBadge}</div>
+      </div>
+      <div class="role-cell"></div>
+      <div class="bat-hand-cell">${batHand}</div>`;
+
+    // Build role dropdown and optional FLEX dropdown into the role-cell
+    const roleCell = row.querySelector(".role-cell");
+    roleCell.appendChild(buildRoleSelect(entry.role, idx));
+    if (isDP) {
+      roleCell.appendChild(buildFlexSelect(entry.flexName, idx));
+    }
+
+    // Drag events
+    row.addEventListener("dragstart", e => {
+      dragSrcIdx = idx;
+      setTimeout(() => row.classList.add("dragging"), 0);
+      e.dataTransfer.effectAllowed = "move";
+    });
+    row.addEventListener("dragend", () => {
+      row.classList.remove("dragging");
+      document.querySelectorAll(".lineup-row").forEach(r => r.classList.remove("drag-over"));
+    });
+    row.addEventListener("dragover", e => {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = "move";
+      document.querySelectorAll(".lineup-row").forEach(r => r.classList.remove("drag-over"));
+      row.classList.add("drag-over");
+    });
+    row.addEventListener("drop", e => {
+      e.preventDefault();
+      if (dragSrcIdx === null || dragSrcIdx === idx) return;
+      const moved = battingOrder.splice(dragSrcIdx, 1)[0];
+      battingOrder.splice(idx, 0, moved);
+      dragSrcIdx = null;
+      buildBattingList();
+    });
+
+    list.appendChild(row);
+  });
+}
+
+function buildRoleSelect(currentRole, idx) {
+  const sel = document.createElement("select");
+  sel.className = "lineup-select" +
+    (currentRole === "DP" ? " dp-select" : currentRole === "EP" ? " ep-select" : "");
+
+  const roles = [
+    { v: "Regular", label: "Player" },
+    { v: "DP",      label: "DP" },
+    { v: "EP",      label: "EP" },
+  ];
+  roles.forEach(r => {
+    const o = document.createElement("option");
+    o.value = r.v;
+    o.textContent = r.label;
+    if (r.v === currentRole) o.selected = true;
+    sel.appendChild(o);
+  });
+
+  sel.addEventListener("change", () => {
+    battingOrder[idx].role = sel.value;
+    if (sel.value !== "DP") battingOrder[idx].flexName = "";
+    buildBattingList();
+  });
+  return sel;
+}
+
+// FLEX player dropdown — lists all players NOT currently in the batting order
+// as a regular/DP player (bench players, backup pitcher/catcher, etc.)
+function buildFlexSelect(currentFlex, idx) {
+  const sel = document.createElement("select");
+  sel.className = "lineup-select flex-select";
+  sel.style.marginTop = "4px";
+
+  const o0 = document.createElement("option");
+  o0.value = "";
+  o0.textContent = "— Select FLEX —";
+  sel.appendChild(o0);
+
+  // Players not on the field are eligible as FLEX
+  const onField = new Set(Object.values(defenseAssignments).filter(Boolean));
+  players.forEach(p => {
+    if (onField.has(p.name)) return; // already playing defense
+    const o = document.createElement("option");
+    o.value = p.name;
+    o.textContent = p.name;
+    if (p.name === currentFlex) o.selected = true;
+    sel.appendChild(o);
+  });
+
+  sel.addEventListener("change", () => {
+    battingOrder[idx].flexName = sel.value;
+    buildBattingList();
+  });
+  return sel;
+}
+
+function addBattingSpot() {
+  battingOrder.push({ id: Date.now(), playerName: "", role: "EP", flexName: "" });
+  buildBattingList();
+}
+
+// ============================================================
+//  SAVE / EDIT MODE
+// ============================================================
+let isSaved = false;
+
+function saveLineup() {
+  isSaved = true;
+  document.body.classList.add("saved-mode");
+
+  // ── Defense tab: swap selects for static text spans ───────
+  document.querySelectorAll("#tab-defense select").forEach(sel => {
+    const val = sel.value;
+    const text = val || "—";
+    const span = document.createElement("span");
+    span.className = "saved-text" + (!val ? " empty" : "");
+    span.textContent = text;
+    sel.dataset.savedHidden = "1";
+    sel.style.display = "none";
+    sel.parentNode.insertBefore(span, sel.nextSibling);
+  });
+
+  // ── Offense tab: replace each row with a clean static row ─
+  const list = document.getElementById("batting-list");
+  list.querySelectorAll(".lineup-row").forEach((row, idx) => {
+    const entry = battingOrder[idx];
+    if (!entry) return;
+    row.dataset.savedHidden = "1";
+    row.style.display = "none";
+
+    const isDP = entry.role === "DP";
+    const isEP = entry.role === "EP";
+
+    const hitterName = isDP && entry.flexName ? entry.flexName : entry.playerName;
+    const hitterObj  = playerByName(hitterName);
+
+    // Role tag
+    let roleTag = "";
+    if (isDP)       roleTag = `<span class="saved-role-tag saved-role-dp">DP</span>`;
+    else if (isEP)  roleTag = `<span class="saved-role-tag saved-role-ep">EP</span>`;
+
+    // Position text
+    let posText = "";
+    if (isDP) {
+      const slot = defSlotForPlayer(entry.playerName);
+      posText = slot ? POS_FULL[slot] : "";
+    } else if (!isEP) {
+      const slot = defSlotForPlayer(entry.playerName);
+      posText = slot ? POS_FULL[slot] : "";
+    }
+
+    // DP player name suffix
+    const dpSuffix = isDP ? ` <span class="saved-dp-name">DP: ${entry.playerName}</span>` : "";
+
+    // Bat hand
+    const batHand = !hitterObj ? "" :
+      hitterObj.bats === "L" ? `<span class="bat-hand-badge bat-L">L</span>` :
+      hitterObj.bats === "S" ? `<span class="bat-hand-badge bat-S">SW</span>` :
+                               `<span class="bat-hand-badge bat-R">R</span>`;
+
+    const staticRow = document.createElement("div");
+    staticRow.className = "lineup-row saved-static-row";
+    staticRow.dataset.savedStatic = "1";
+    staticRow.innerHTML = `
+      <div class="bat-order-num">${idx + 1}</div>
+      <div></div>
+      <div class="player-info">
+        <div class="saved-player-line">
+          <span class="player-name-text">${hitterName || '—'}</span>
+          ${dpSuffix}
+          ${roleTag}
+        </div>
+        ${posText ? `<div class="saved-pos-text">${posText}</div>` : ""}
+      </div>
+      <div></div>
+      <div class="bat-hand-cell">${batHand}</div>`;
+    list.insertBefore(staticRow, row.nextSibling);
+  });
+
+  // Toggle buttons
+  document.querySelectorAll(".btn-save").forEach(b => b.style.display = "none");
+  document.querySelectorAll(".btn-edit").forEach(b => b.style.display = "");
+}
+
+function editLineup() {
+  isSaved = false;
+  document.body.classList.remove("saved-mode");
+
+  // Restore defense selects
+  document.querySelectorAll(".saved-text").forEach(span => span.remove());
+  document.querySelectorAll("#tab-defense select[data-saved-hidden]").forEach(sel => {
+    sel.style.display = "";
+    delete sel.dataset.savedHidden;
+  });
+
+  // Remove static offense rows and restore original rows
+  document.querySelectorAll(".saved-static-row").forEach(r => r.remove());
+  document.querySelectorAll(".lineup-row[data-saved-hidden]").forEach(row => {
+    row.style.display = "";
+    delete row.dataset.savedHidden;
+  });
+
+  // Toggle buttons
+  document.querySelectorAll(".btn-save").forEach(b => b.style.display = "");
+  document.querySelectorAll(".btn-edit").forEach(b => b.style.display = "none");
+}
+function switchTab(tabName) {
+  document.querySelectorAll(".tab-panel").forEach(p => p.classList.remove("active"));
+  document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+  document.getElementById("tab-" + tabName).classList.add("active");
+  event.target.classList.add("active");
+}
+
+// ============================================================
+//  INIT
+// ============================================================
+// Seed backup selections from startPos
+players.forEach(p => {
+  if (p.startPos === "Backup Pitcher") backupAssignments.P = p.name;
+  if (p.startPos === "Backup Catcher") backupAssignments.C = p.name;
+});
+
+buildDefenseDropdowns();
+buildStatusPanel();
+buildBattingList();
+</script>
+</body>
+</html>
