@@ -225,6 +225,10 @@
     border-color: var(--green);
     color: #fff;
   }
+  /* When nothing selected, show red to match UNASSIGNED option */
+  .position-slot select:not(.assigned):not(.conflict) {
+    color: #e8304a;
+  }
   .position-slot select option.already-assigned { color: #e8304a; }
 
   /* DP/FLEX indicator */
@@ -574,6 +578,38 @@
     border: 1px solid var(--border);
   }
   .btn-ghost:hover { border-color: var(--blue-bright); color: var(--blue-bright); }
+
+  /* Opponent field in action bar */
+  .opponent-field {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-left: auto;
+  }
+  .opponent-label {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1rem;
+    letter-spacing: 2px;
+    color: var(--white);
+    white-space: nowrap;
+  }
+  .opponent-input {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.85rem;
+    padding: 7px 12px;
+    width: 180px;
+    transition: border-color 0.2s;
+  }
+  .opponent-input:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 2px rgba(178,34,52,0.15);
+  }
+  .opponent-input::placeholder { color: var(--text3); }
 
   /* ── DEFENSE LAYOUT ─────────────────────────────────────── */
   .defense-layout {
@@ -1008,7 +1044,11 @@
     <button class="btn btn-save" onclick="saveLineup()">💾 Save</button>
     <button class="btn btn-edit" onclick="editLineup()" style="display:none;">✏️ Edit</button>
     <button class="btn btn-send" onclick="sendLineup()" style="display:none;">📲 Send to Coaches</button>
-    <button class="btn btn-ghost" onclick="window.print()">Print</button>
+    <div class="opponent-field">
+      <label class="opponent-label" for="opponent-input">vs.</label>
+      <input id="opponent-input" class="opponent-input" type="text" placeholder="Opponent team name"
+             oninput="syncOpponent(this.value)" autocomplete="off">
+    </div>
   </div>
 
   <div class="section-title">Defensive Positions</div>
@@ -1251,7 +1291,11 @@
     <button class="btn btn-save" onclick="saveLineup()">💾 Save</button>
     <button class="btn btn-edit" onclick="editLineup()" style="display:none;">✏️ Edit</button>
     <button class="btn btn-send" onclick="sendLineup()" style="display:none;">📲 Send to Coaches</button>
-    <button class="btn btn-ghost" onclick="window.print()">Print</button>
+    <div class="opponent-field">
+      <label class="opponent-label" for="opponent-input-offense">vs.</label>
+      <input id="opponent-input-offense" class="opponent-input" type="text" placeholder="Opponent team name"
+             oninput="syncOpponent(this.value)" autocomplete="off">
+    </div>
   </div>
 
   <div class="section-title">Batting Order</div>
@@ -1379,7 +1423,12 @@ function buildDefenseDropdowns() {
 }
 
 function rebuildSlotOptions(select, slotKey) {
-  select.innerHTML = '<option value="">— Unassigned —</option>';
+  select.innerHTML = '';
+  const unassignedOpt = document.createElement("option");
+  unassignedOpt.value = "";
+  unassignedOpt.textContent = "— UNASSIGNED —";
+  unassignedOpt.style.color = "#e8304a";
+  select.appendChild(unassignedOpt);
 
   // Map of playerName -> slotKey for all slots OTHER than this one
   const assignedElsewhere = {};
@@ -1432,12 +1481,12 @@ function rebuildSlotOptions(select, slotKey) {
   });
 
   // Append: preferred → alternate → others → assigned-elsewhere (red)
-  // For pitcher slot, sort each group by pitchOrder
-  const sortByPitch = (arr) => isPitcherSlot
-    ? [...arr].sort((a, b) => (a.pitchOrder ?? 99) - (b.pitchOrder ?? 99))
+  // For pitcher slot, sort each group alphabetically
+  const sortPitchers = (arr) => isPitcherSlot
+    ? [...arr].sort((a, b) => a.name.localeCompare(b.name))
     : arr;
 
-  [...sortByPitch(preferred), ...sortByPitch(alternates), ...sortByPitch(others)].forEach(p => {
+  [...sortPitchers(preferred), ...sortPitchers(alternates), ...sortPitchers(others)].forEach(p => {
     const o = document.createElement("option");
     o.value = p.name;
     o.textContent = p.name;
@@ -1445,7 +1494,7 @@ function rebuildSlotOptions(select, slotKey) {
     select.appendChild(o);
   });
 
-  sortByPitch(assignedRed).forEach(p => {
+  sortPitchers(assignedRed).forEach(p => {
     const o = document.createElement("option");
     o.value = p.name;
     o.textContent = p.name;
@@ -1461,9 +1510,9 @@ function rebuildSlotOptions(select, slotKey) {
 function onDefenseChange(slotKey, playerName) {
   defenseAssignments[slotKey] = playerName;
 
-  // If the new field starter matches the current backup, clear the backup
-  if (slotKey === "P" && playerName && playerName === backupAssignments.P) backupAssignments.P = "";
-  if (slotKey === "C" && playerName && playerName === backupAssignments.C) backupAssignments.C = "";
+  // Clear backup if they've just been assigned any field position
+  if (backupAssignments.P && backupAssignments.P === playerName) backupAssignments.P = "";
+  if (backupAssignments.C && backupAssignments.C === playerName) backupAssignments.C = "";
 
   DEF_POSITIONS.forEach(pos => {
     const slot = document.querySelector(`#slot-${pos.key} select`);
@@ -1472,6 +1521,7 @@ function onDefenseChange(slotKey, playerName) {
   checkConflicts();
   buildStatusPanel();
   syncBattingOrderToDefense();
+  saveState();
 }
 
 function checkConflicts() {
@@ -1502,6 +1552,8 @@ function checkConflicts() {
 }
 
 function clearDefense() {
+  try { localStorage.removeItem(STORAGE_KEY); } catch(e) {}
+  document.querySelectorAll(".opponent-input").forEach(el => { el.value = ""; });
   const defaults = defaultAssignments();
   DEF_POSITIONS.forEach(pos => {
     defenseAssignments[pos.key] = defaults[pos.key] || "";
@@ -1517,8 +1569,11 @@ function clearDefense() {
     if (p.startPos === "Backup Pitcher") backupAssignments.P = p.name;
     if (p.startPos === "Backup Catcher") backupAssignments.C = p.name;
   });
+  // Fully rebuild batting order from defaults (clears all manual roles/DP/EP)
+  battingOrder.forEach(e => { e.manuallyMoved = false; });
+  battingOrder = buildInitialBattingOrder();
   buildStatusPanel();
-  syncBattingOrderToDefense();
+  buildBattingList();
 }
 
 // ============================================================
@@ -1528,7 +1583,25 @@ const backupAssignments = { P: "", C: "" };
 
 function onBackupChange(role, playerName) {
   backupAssignments[role] = playerName;
+
+  // If the selected backup is currently on the field, remove them from that slot
+  if (playerName) {
+    DEF_POSITIONS.forEach(pos => {
+      if (defenseAssignments[pos.key] === playerName) {
+        defenseAssignments[pos.key] = "";
+      }
+    });
+    // Rebuild all field dropdowns to reflect the cleared slot
+    DEF_POSITIONS.forEach(pos => {
+      const slot = document.querySelector(`#slot-${pos.key} select`);
+      if (slot) rebuildSlotOptions(slot, pos.key);
+    });
+    checkConflicts();
+    syncBattingOrderToDefense();
+  }
+
   buildStatusPanel();
+  saveState();
 }
 
 // ============================================================
@@ -1539,20 +1612,27 @@ function buildStatusPanel() {
   const starterP = defenseAssignments["P"] || "";
   const starterC = defenseAssignments["C"] || "";
 
-  // Auto-clear backup if it conflicts with the field starter
-  if (backupAssignments.P && backupAssignments.P === starterP) backupAssignments.P = "";
-  if (backupAssignments.C && backupAssignments.C === starterC) backupAssignments.C = "";
+  // Auto-clear backup if they've been assigned any field position
+  if (backupAssignments.P && onField.has(backupAssignments.P)) backupAssignments.P = "";
+  if (backupAssignments.C && onField.has(backupAssignments.C)) backupAssignments.C = "";
 
   // ── Backup Pitcher dropdown ────────────────────────────────
   const bpSel = document.getElementById("backup-p-select");
   if (bpSel) {
-    bpSel.innerHTML = '<option value="">— None —</option>';
+    bpSel.innerHTML = '';
+    const noneOpt = document.createElement("option");
+    noneOpt.value = "";
+    noneOpt.textContent = "— NONE —";
+    noneOpt.style.color = "#e8304a";
+    bpSel.appendChild(noneOpt);
     players
       .filter(p => (p.pref === "P" || p.alt === "P") && p.name !== starterP)
+      .sort((a, b) => a.name.localeCompare(b.name))
       .forEach(p => {
         const o = document.createElement("option");
         o.value = p.name;
         o.textContent = p.name;
+        if (onField.has(p.name)) o.style.color = "#e8304a";
         if (p.name === backupAssignments.P) o.selected = true;
         bpSel.appendChild(o);
       });
@@ -1562,13 +1642,20 @@ function buildStatusPanel() {
   // ── Backup Catcher dropdown ────────────────────────────────
   const bcSel = document.getElementById("backup-c-select");
   if (bcSel) {
-    bcSel.innerHTML = '<option value="">— None —</option>';
+    bcSel.innerHTML = '';
+    const noneOpt2 = document.createElement("option");
+    noneOpt2.value = "";
+    noneOpt2.textContent = "— NONE —";
+    noneOpt2.style.color = "#e8304a";
+    bcSel.appendChild(noneOpt2);
     players
       .filter(p => (p.pref === "C" || p.alt === "C") && p.name !== starterC)
+      .sort((a, b) => a.name.localeCompare(b.name))
       .forEach(p => {
         const o = document.createElement("option");
         o.value = p.name;
         o.textContent = p.name;
+        if (onField.has(p.name)) o.style.color = "#e8304a";
         if (p.name === backupAssignments.C) o.selected = true;
         bcSel.appendChild(o);
       });
@@ -1743,8 +1830,8 @@ function buildBattingList() {
 
     row.draggable = true;
 
-    const isDP  = entry.role === "DP";
-    const isEP  = entry.role === "EP";
+    const isDP  = entry.role === "DP" && idx < 9;
+    const isEP  = idx >= 9; // slots 10+ are always EP regardless of stored role
 
     // For EP rows, display the selected EP player name (or placeholder)
     if (isEP) {
@@ -1887,27 +1974,70 @@ function buildBattingList() {
       battingOrder.forEach(e => { if (e.playerName && e.playerName !== PITCHER_PLACEHOLDER) e.manuallyMoved = true; });
       dragSrcIdx = null;
       buildBattingList();
+      saveState();
     });
 
     list.appendChild(row);
   });
 }
 
+// Resolve conflicts after a FLEX or EP name is set at changedIdx.
+// Any other row that uses the same player name gets reset.
+function resolveOffenseConflicts(changedIdx) {
+  const changed = battingOrder[changedIdx];
+  if (!changed) return;
+
+  // Collect the name(s) just assigned at changedIdx
+  const takenNames = new Set();
+  if (changed.role === "DP" && changed.flexName) takenNames.add(changed.flexName);
+  if (changed.role === "EP" && changed.epPlayerName) takenNames.add(changed.epPlayerName);
+  if (!takenNames.size) return;
+
+  let hadConflict = false;
+  battingOrder.forEach((entry, i) => {
+    if (i === changedIdx) return;
+
+    // Check FLEX conflict
+    if (entry.role === "DP" && entry.flexName && takenNames.has(entry.flexName)) {
+      entry.flexName = "";
+      hadConflict = true;
+    }
+    // Check EP conflict
+    if (entry.role === "EP" && entry.epPlayerName && takenNames.has(entry.epPlayerName)) {
+      entry.epPlayerName = "";
+      entry.playerName   = "";
+      hadConflict = true;
+    }
+  });
+
+  if (hadConflict) buildBattingList();
+}
+
 function buildRoleSelect(currentRole, idx) {
+  const isEPSlot = idx >= 9; // spots 10+ are EP-only; spots 1-9 are Player/DP only
+
+  // Correct role if mismatched with slot type
+  let role = currentRole;
+  if (isEPSlot && role !== "EP")        role = "EP";
+  if (!isEPSlot && role === "EP")       role = "Regular";
+  if (battingOrder[idx] && role !== battingOrder[idx].role) {
+    battingOrder[idx].role = role;
+    if (role !== "DP") battingOrder[idx].flexName = "";
+  }
+
   const sel = document.createElement("select");
   sel.className = "lineup-select" +
-    (currentRole === "DP" ? " dp-select" : currentRole === "EP" ? " ep-select" : "");
+    (role === "DP" ? " dp-select" : role === "EP" ? " ep-select" : "");
 
-  const roles = [
-    { v: "Regular", label: "Player" },
-    { v: "DP",      label: "DP" },
-    { v: "EP",      label: "EP" },
-  ];
+  const roles = isEPSlot
+    ? [{ v: "EP", label: "EP" }]
+    : [{ v: "Regular", label: "Player" }, { v: "DP", label: "DP" }];
+
   roles.forEach(r => {
     const o = document.createElement("option");
     o.value = r.v;
     o.textContent = r.label;
-    if (r.v === currentRole) o.selected = true;
+    if (r.v === role) o.selected = true;
     sel.appendChild(o);
   });
 
@@ -1915,6 +2045,7 @@ function buildRoleSelect(currentRole, idx) {
     battingOrder[idx].role = sel.value;
     if (sel.value !== "DP") battingOrder[idx].flexName = "";
     buildBattingList();
+    saveState();
   });
   return sel;
 }
@@ -1928,7 +2059,8 @@ function buildFlexSelect(currentFlex, idx) {
 
   const o0 = document.createElement("option");
   o0.value = "";
-  o0.textContent = "— Select FLEX —";
+  o0.textContent = "— Select —";
+  o0.style.color = "#e8304a";
   sel.appendChild(o0);
 
   // Players not on the field are eligible as FLEX
@@ -1944,7 +2076,9 @@ function buildFlexSelect(currentFlex, idx) {
 
   sel.addEventListener("change", () => {
     battingOrder[idx].flexName = sel.value;
+    resolveOffenseConflicts(idx);
     buildBattingList();
+    saveState();
   });
   return sel;
 }
@@ -1956,7 +2090,8 @@ function buildEPSelect(currentEP, idx) {
 
   const o0 = document.createElement("option");
   o0.value = "";
-  o0.textContent = "— Select Player —";
+  o0.textContent = "— Select —";
+  o0.style.color = "#e8304a";
   sel.appendChild(o0);
 
   // All players are eligible for EP (including bench/backup)
@@ -1977,8 +2112,10 @@ function buildEPSelect(currentEP, idx) {
 
   sel.addEventListener("change", () => {
     battingOrder[idx].epPlayerName = sel.value;
-    battingOrder[idx].playerName   = sel.value; // keep playerName in sync for display
+    battingOrder[idx].playerName   = sel.value;
+    resolveOffenseConflicts(idx);
     buildBattingList();
+    saveState();
   });
   return sel;
 }
@@ -2038,8 +2175,8 @@ function saveLineup() {
     row.dataset.savedHidden = "1";
     row.style.display = "none";
 
-    const isDP = entry.role === "DP";
-    const isEP = entry.role === "EP";
+    const isDP = entry.role === "DP" && idx < 9;
+    const isEP = idx >= 9;
 
     const flexName   = isDP ? (entry.flexName || "") : "";
     const epName     = isEP ? (entry.epPlayerName || entry.playerName || "") : "";
@@ -2232,8 +2369,9 @@ function formatPhone(raw) {
 function buildLineupText() {
   const lines = [];
   const date = new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+  const opponent = getOpponent();
   lines.push(`⚾ AMERICAN FREEDOM SOFTBALL`);
-  lines.push(`Lineup — ${date}`);
+  lines.push(opponent ? `Lineup — ${date} vs. ${opponent}` : `Lineup — ${date}`);
   lines.push("");
 
   // ── BATTING ORDER ─────────────────────────────────────────
@@ -2248,8 +2386,8 @@ function buildLineupText() {
       return;
     }
 
-    const isDP = entry.role === "DP";
-    const isEP = entry.role === "EP";
+    const isDP = entry.role === "DP" && idx < 9;
+    const isEP = idx >= 9;
     const epName = isEP ? (entry.epPlayerName || entry.playerName || "") : "";
 
     if (isDP) {
@@ -2277,9 +2415,22 @@ function buildLineupText() {
     p.name !== backupAssignments.P &&
     p.name !== backupAssignments.C
   ).map(p => p.name);
-  if (bench.length) lines.push(`Bench: ${bench.join(", ")}`);
+  if (bench.length) {
+    lines.push("");
+    lines.push("Bench:");
+    bench.forEach(name => lines.push(`  ${name}`));
+  }
 
   return lines.join("\n");
+}
+
+function syncOpponent(value) {
+  document.querySelectorAll(".opponent-input").forEach(el => { el.value = value; });
+  saveState();
+}
+
+function getOpponent() {
+  return (document.getElementById("opponent-input")?.value || "").trim();
 }
 
 function switchTab(tabName, evt) {
@@ -2414,12 +2565,16 @@ function applyInputChanges() {
   buildDefenseDropdowns();
   buildStatusPanel();
   buildBattingList();
+  saveState();
 
   const btn = document.querySelector("#tab-inputs .btn-primary");
   if (btn) { btn.textContent = "✓ Applied!"; setTimeout(() => btn.textContent = "✓ Apply Changes", 1500); }
 }
 
 function resetInputsToDefault() {
+  // Clear saved state so we return to factory defaults
+  try { localStorage.removeItem(STORAGE_KEY); } catch(e) {}
+
   const defaults = [
     { pref:"3B", alt:"SS",  startPos:"3B",             batOrder:4  },
     { pref:"1B", alt:"P",   startPos:"1B",             batOrder:5  },
@@ -2455,13 +2610,69 @@ function resetInputsToDefault() {
 }
 
 // ============================================================
+//  LOCAL STORAGE PERSISTENCE
+// ============================================================
+const STORAGE_KEY = "afs_lineup_v2";
+
+function saveState() {
+  try {
+    const state = {
+      players: players.map(p => ({
+        name: p.name, pref: p.pref, alt: p.alt, bats: p.bats,
+        startPos: p.startPos, batOrder: p.batOrder
+      })),
+      defenseAssignments: { ...defenseAssignments },
+      backupAssignments:  { ...backupAssignments },
+      battingOrder: battingOrder.map(e => ({ ...e })),
+      opponent: getOpponent(),
+    };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  } catch(e) { /* localStorage unavailable */ }
+}
+
+function loadState() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return false;
+    const state = JSON.parse(raw);
+
+    if (state.players && state.players.length === players.length) {
+      state.players.forEach((sp, i) => {
+        players[i].pref     = sp.pref     ?? players[i].pref;
+        players[i].alt      = sp.alt      ?? players[i].alt;
+        players[i].startPos = sp.startPos ?? players[i].startPos;
+        players[i].batOrder = sp.batOrder ?? players[i].batOrder;
+        // pitchOrder always comes from hardcoded data, never overwritten by cache
+      });
+    }
+    if (state.defenseAssignments) Object.assign(defenseAssignments, state.defenseAssignments);
+    if (state.backupAssignments) {
+      backupAssignments.P = state.backupAssignments.P || "";
+      backupAssignments.C = state.backupAssignments.C || "";
+    }
+    if (state.battingOrder && state.battingOrder.length) {
+      battingOrder.length = 0;
+      state.battingOrder.forEach(e => battingOrder.push(e));
+    }
+    if (state.opponent !== undefined) {
+      // Use setTimeout so DOM is ready before setting values
+      setTimeout(() => syncOpponent(state.opponent), 0);
+    }
+    return true;
+  } catch(e) { return false; }
+}
+
+// ============================================================
 //  INIT
 // ============================================================
-// Seed backup selections from startPos
-players.forEach(p => {
-  if (p.startPos === "Backup Pitcher") backupAssignments.P = p.name;
-  if (p.startPos === "Backup Catcher") backupAssignments.C = p.name;
-});
+const hasSavedState = loadState();
+
+if (!hasSavedState) {
+  players.forEach(p => {
+    if (p.startPos === "Backup Pitcher") backupAssignments.P = p.name;
+    if (p.startPos === "Backup Catcher") backupAssignments.C = p.name;
+  });
+}
 
 buildDefenseDropdowns();
 buildStatusPanel();
