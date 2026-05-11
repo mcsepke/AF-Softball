@@ -817,13 +817,28 @@
   }
   .btn-send:hover { background: #8f1a27; }
 
+  /* In save mode, show full names — no truncation */
+  body.saved-mode .player-name-text {
+    white-space: normal;
+    overflow: visible;
+    text-overflow: clip;
+  }
+  body.saved-mode .saved-player-line,
+  body.saved-mode .dp-name-row {
+    flex-wrap: wrap;
+    overflow: visible;
+  }
+
   /* Hide legend, drag handles, and reset button in saved mode */
   body.saved-mode .legend { display: none; }
   body.saved-mode .drag-handle { display: none; }
   body.saved-mode .action-bar .btn-primary { display: none; }
   body.saved-mode .action-bar .btn-ghost { display: none; }
   body.saved-mode .add-spot-btn { display: none; }
-  body.saved-mode .lineup-row { cursor: default; }
+  body.saved-mode .lineup-row,
+  body.saved-mode .saved-static-row {
+    grid-template-columns: 32px 0 1fr 0 44px;
+  }
   body.saved-mode .bat-order-num { color: var(--accent); }
 
   /* ── INPUTS TAB ─────────────────────────────────────────── */
@@ -1447,20 +1462,32 @@ function rebuildSlotOptions(select, slotKey) {
   const others      = [];
   const assignedRed = [];
 
+  // ── PITCHER SLOT: flat alphabetical, red if assigned elsewhere ──
+  if (isPitcherSlot) {
+    players
+      .filter(p => p.pref === "P" || p.alt === "P")
+      .sort((a, b) => a.name.localeCompare(b.name))
+      .forEach(p => {
+        const o = document.createElement("option");
+        o.value = p.name;
+        o.textContent = p.name;
+        o.style.color = assignedElsewhere[p.name] ? "#e8304a" : "#f0f4ff";
+        select.appendChild(o);
+      });
+    const assignedVal = defenseAssignments[slotKey] || "";
+    select.value = assignedVal;
+    select.className = select.value ? "assigned" : "";
+    return;
+  }
+
+  // ── All other slots: preferred → alternate → others → assigned-elsewhere ──
   players.forEach(p => {
-    // Pitcher slot: only players who can pitch
-    if (isPitcherSlot && p.pref !== "P" && p.alt !== "P") return;
-    // Catcher slot: only players who can catch
     if (isCatcherSlot && p.pref !== "C" && p.alt !== "C") return;
 
-    // Determine fit category
     let isPref, isAlt;
     if (isOFSlot) {
       isPref = (p.pref === "OF" || p.alt === "OF");
       isAlt  = false;
-    } else if (isPitcherSlot) {
-      isPref = p.pref === "P";
-      isAlt  = p.alt  === "P";
     } else if (isCatcherSlot) {
       isPref = p.pref === "C";
       isAlt  = p.alt  === "C";
@@ -1480,13 +1507,7 @@ function rebuildSlotOptions(select, slotKey) {
     }
   });
 
-  // Append: preferred → alternate → others → assigned-elsewhere (red)
-  // For pitcher slot, sort each group alphabetically
-  const sortPitchers = (arr) => isPitcherSlot
-    ? [...arr].sort((a, b) => a.name.localeCompare(b.name))
-    : arr;
-
-  [...sortPitchers(preferred), ...sortPitchers(alternates), ...sortPitchers(others)].forEach(p => {
+  [...preferred, ...alternates, ...others].forEach(p => {
     const o = document.createElement("option");
     o.value = p.name;
     o.textContent = p.name;
@@ -1494,7 +1515,7 @@ function rebuildSlotOptions(select, slotKey) {
     select.appendChild(o);
   });
 
-  sortPitchers(assignedRed).forEach(p => {
+  assignedRed.forEach(p => {
     const o = document.createElement("option");
     o.value = p.name;
     o.textContent = p.name;
