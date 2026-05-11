@@ -1098,55 +1098,55 @@
       <!-- Center Field: 50% x, 16% y -->
       <div class="position-slot" id="slot-CF" style="left:50%;top:15%;">
         <div class="position-label">Center Field</div>
-        <select onchange="onDefenseChange('CF', this.value)"><option value="">— Unassigned —</option></select>
+        <select onchange="expandSlotOptions('CF', this.value)"><option value="">— Unassigned —</option></select>
       </div>
 
       <!-- Left Field: 18% x, 31% y -->
       <div class="position-slot" id="slot-LF" style="left:19%;top:30%;">
         <div class="position-label">Left Field</div>
-        <select onchange="onDefenseChange('LF', this.value)"><option value="">— Unassigned —</option></select>
+        <select onchange="expandSlotOptions('LF', this.value)"><option value="">— Unassigned —</option></select>
       </div>
 
       <!-- Right Field: 82% x, 31% y -->
       <div class="position-slot" id="slot-RF" style="left:81%;top:30%;">
         <div class="position-label">Right Field</div>
-        <select onchange="onDefenseChange('RF', this.value)"><option value="">— Unassigned —</option></select>
+        <select onchange="expandSlotOptions('RF', this.value)"><option value="">— Unassigned —</option></select>
       </div>
 
-      <!-- Shortstop: closer to infield, between 3B and 2B bag -->
-      <div class="position-slot" id="slot-SS" style="left:32%;top:57%;">
+      <!-- Shortstop: pushed further left -->
+      <div class="position-slot" id="slot-SS" style="left:24%;top:57%;">
         <div class="position-label">Shortstop</div>
-        <select onchange="onDefenseChange('SS', this.value)"><option value="">— Unassigned —</option></select>
+        <select onchange="expandSlotOptions('SS', this.value)"><option value="">— Unassigned —</option></select>
       </div>
 
-      <!-- Second Base: closer to infield, between 1B and 2B bag -->
-      <div class="position-slot" id="slot-2B" style="left:68%;top:57%;">
+      <!-- Second Base: pushed further right -->
+      <div class="position-slot" id="slot-2B" style="left:76%;top:57%;">
         <div class="position-label">2nd Base</div>
-        <select onchange="onDefenseChange('2B', this.value)"><option value="">— Unassigned —</option></select>
+        <select onchange="expandSlotOptions('2B', this.value)"><option value="">— Unassigned —</option></select>
       </div>
 
       <!-- Pitcher: on the mound -->
       <div class="position-slot" id="slot-P" style="left:50%;top:73%;">
         <div class="position-label">Pitcher</div>
-        <select onchange="onDefenseChange('P', this.value)"><option value="">— Unassigned —</option></select>
+        <select onchange="expandSlotOptions('P', this.value)"><option value="">— Unassigned —</option></select>
       </div>
 
-      <!-- Third Base: moved lower for more gap below Pitcher -->
-      <div class="position-slot" id="slot-3B" style="left:26%;top:83%;">
+      <!-- Third Base: pushed further left and down -->
+      <div class="position-slot" id="slot-3B" style="left:18%;top:86%;">
         <div class="position-label">3rd Base</div>
-        <select onchange="onDefenseChange('3B', this.value)"><option value="">— Unassigned —</option></select>
+        <select onchange="expandSlotOptions('3B', this.value)"><option value="">— Unassigned —</option></select>
       </div>
 
-      <!-- First Base: moved lower for more gap below Pitcher -->
-      <div class="position-slot" id="slot-1B" style="left:74%;top:83%;">
+      <!-- First Base: pushed further right and down -->
+      <div class="position-slot" id="slot-1B" style="left:82%;top:86%;">
         <div class="position-label">1st Base</div>
-        <select onchange="onDefenseChange('1B', this.value)"><option value="">— Unassigned —</option></select>
+        <select onchange="expandSlotOptions('1B', this.value)"><option value="">— Unassigned —</option></select>
       </div>
 
       <!-- Catcher: nudged down to match -->
       <div class="position-slot" id="slot-C" style="left:50%;top:96%;">
         <div class="position-label">Catcher</div>
-        <select onchange="onDefenseChange('C', this.value)"><option value="">— Unassigned —</option></select>
+        <select onchange="expandSlotOptions('C', this.value)"><option value="">— Unassigned —</option></select>
       </div>
 
     </div><!-- /field-overlay -->
@@ -1349,16 +1349,15 @@ function rebuildSlotOptions(select, slotKey) {
     }
   });
 
-  const isOFSlot       = (slotKey === "LF" || slotKey === "CF" || slotKey === "RF");
-  const isPitcherSlot  = slotKey === "P";
-  const isCatcherSlot  = slotKey === "C";
+  const isOFSlot      = (slotKey === "LF" || slotKey === "CF" || slotKey === "RF");
+  const isPitcherSlot = slotKey === "P";
+  const isCatcherSlot = slotKey === "C";
 
   const preferred   = [];
   const alternates  = [];
   const others      = [];
   const assignedRed = [];
 
-  // Short label for each slot shown next to name when already assigned
   const SLOT_ABBR = {
     "1B":"1st", "2B":"2nd", "3B":"3rd",
     SS:"SS", LF:"LF", CF:"CF", RF:"RF",
@@ -1370,80 +1369,105 @@ function rebuildSlotOptions(select, slotKey) {
     return slot ? `${p.name} · ${SLOT_ABBR[slot] || slot}` : p.name;
   }
 
-  // ── PITCHER SLOT: flat alphabetical, red if assigned elsewhere ──
+  const slot       = select.closest(".position-slot");
+  const isExpanded = slot && slot.dataset.expanded === "1";
+
+  // ── PITCHER SLOT: flat alphabetical ──────────────────────
   if (isPitcherSlot) {
     players
       .filter(p => (p.pref === "P" || p.alt === "P") && !p.unavailable)
       .sort((a, b) => a.name.localeCompare(b.name))
       .forEach(p => {
+        const isRed = !!assignedElsewhere[p.name];
+        if (isRed && !isExpanded) return; // hide until expanded
         const o = document.createElement("option");
         o.value = p.name;
         o.textContent = optionText(p);
-        o.style.color = assignedElsewhere[p.name] ? "#e8304a" : "#f0f4ff";
+        o.style.color = isRed ? "#e8304a" : "#f0f4ff";
+        if (isRed) o.dataset.assignedOption = "1";
         select.appendChild(o);
       });
-    const assignedVal = defenseAssignments[slotKey] || "";
-    select.value = assignedVal;
-    if (assignedVal && select.value !== assignedVal) {
-      defenseAssignments[slotKey] = "";
-      select.value = "";
+
+  } else {
+    // ── All other slots ───────────────────────────────────
+    players.forEach(p => {
+      if (p.unavailable) return;
+      if (isCatcherSlot && p.pref !== "C" && p.alt !== "C") return;
+
+      let isPref, isAlt;
+      if (isOFSlot) {
+        isPref = (p.pref === "OF" || p.alt === "OF");
+        isAlt  = false;
+      } else if (isCatcherSlot) {
+        isPref = p.pref === "C";
+        isAlt  = p.alt  === "C";
+      } else {
+        isPref = p.pref === slotKey;
+        isAlt  = p.alt  === slotKey;
+      }
+
+      if (assignedElsewhere[p.name]) assignedRed.push(p);
+      else if (isPref) preferred.push(p);
+      else if (isAlt)  alternates.push(p);
+      else             others.push(p);
+    });
+
+    [...preferred, ...alternates, ...others].forEach(p => {
+      const o = document.createElement("option");
+      o.value = p.name;
+      o.textContent = optionText(p);
+      o.style.color = "#f0f4ff";
+      select.appendChild(o);
+    });
+
+    if (!isExpanded && assignedRed.length > 0) {
+      // Add sentinel "More" option at the bottom
+      const more = document.createElement("option");
+      more.value = "__MORE__";
+      more.textContent = `▼  More (${assignedRed.length} assigned)`;
+      more.style.color = "#8fa4cc";
+      more.style.fontStyle = "italic";
+      select.appendChild(more);
+    } else {
+      // Expanded — show all assigned-elsewhere players
+      assignedRed.forEach(p => {
+        const o = document.createElement("option");
+        o.value = p.name;
+        o.textContent = optionText(p);
+        o.style.color = "#e8304a";
+        o.dataset.assignedOption = "1";
+        select.appendChild(o);
+      });
     }
-    select.className = select.value ? "assigned" : "";
-    return;
   }
 
-  // ── All other slots: preferred → alternate → others → assigned-elsewhere ──
-  players.forEach(p => {
-    if (p.unavailable) return;
-    if (isCatcherSlot && p.pref !== "C" && p.alt !== "C") return;
-
-    let isPref, isAlt;
-    if (isOFSlot) {
-      isPref = (p.pref === "OF" || p.alt === "OF");
-      isAlt  = false;
-    } else if (isCatcherSlot) {
-      isPref = p.pref === "C";
-      isAlt  = p.alt  === "C";
-    } else {
-      isPref = p.pref === slotKey;
-      isAlt  = p.alt  === slotKey;
-    }
-
-    if (assignedElsewhere[p.name]) {
-      assignedRed.push(p);
-    } else if (isPref) {
-      preferred.push(p);
-    } else if (isAlt) {
-      alternates.push(p);
-    } else {
-      others.push(p);
-    }
-  });
-
-  [...preferred, ...alternates, ...others].forEach(p => {
-    const o = document.createElement("option");
-    o.value = p.name;
-    o.textContent = optionText(p);
-    o.style.color = "#f0f4ff";
-    select.appendChild(o);
-  });
-
-  assignedRed.forEach(p => {
-    const o = document.createElement("option");
-    o.value = p.name;
-    o.textContent = optionText(p);
-    o.style.color = "#e8304a";
-    select.appendChild(o);
-  });
-
+  // Restore assignment value
   const assignedVal = defenseAssignments[slotKey] || "";
   select.value = assignedVal;
-  // If the value didn't stick (player removed from options), clear the assignment
   if (assignedVal && select.value !== assignedVal) {
     defenseAssignments[slotKey] = "";
     select.value = "";
   }
+
   select.className = select.value ? "assigned" : "";
+}
+
+// Called from onchange — intercepts the __MORE__ sentinel
+function expandSlotOptions(slotKey, value) {
+  if (value === "__MORE__") {
+    const slot = document.querySelector(`#slot-${slotKey}`);
+    if (slot) slot.dataset.expanded = "1";
+    const sel = document.querySelector(`#slot-${slotKey} select`);
+    if (sel) {
+      rebuildSlotOptions(sel, slotKey);
+      sel.focus();
+    }
+    return;
+  }
+  // Real selection — collapse expanded state and process the change
+  const slot = document.querySelector(`#slot-${slotKey}`);
+  if (slot) slot.dataset.expanded = "0";
+  onDefenseChange(slotKey, value);
 }
 
 function onDefenseChange(slotKey, playerName) {
