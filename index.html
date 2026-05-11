@@ -810,12 +810,12 @@
   }
   .btn-edit:hover { background: var(--blue); color: #fff; border-color: var(--blue); }
 
-  .btn-send {
-    background: var(--accent);
+  .btn-groupme {
+    background: #00aff0;
     color: #fff;
     font-weight: 700;
   }
-  .btn-send:hover { background: #8f1a27; }
+  .btn-groupme:hover { background: #0090c8; }
 
   /* In save mode, show full names — no truncation */
   body.saved-mode .player-name-text {
@@ -916,106 +916,29 @@
   .inputs-table input[type="number"]::-webkit-outer-spin-button,
   .inputs-table input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; }
 
-  /* ── SEND MODAL ─────────────────────────────────────────── */
-  .send-modal-overlay {
-    display: none;
+  /* ── GROUPME TOAST ──────────────────────────────────────── */
+  .groupme-toast {
     position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.7);
-    backdrop-filter: blur(4px);
-    z-index: 1000;
-    align-items: center;
-    justify-content: center;
-    padding: 20px;
-  }
-  .send-modal {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 14px;
-    width: 100%;
-    max-width: 420px;
-    overflow: hidden;
-    box-shadow: 0 20px 60px rgba(0,0,0,0.6);
-  }
-  .send-modal-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 16px 20px 12px;
-    border-bottom: 1px solid var(--border);
-  }
-  .send-modal-title {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 1.2rem;
-    letter-spacing: 2px;
-    color: var(--white);
-  }
-  .send-modal-close {
-    background: none;
-    border: none;
-    color: var(--text2);
-    font-size: 1rem;
-    cursor: pointer;
-    padding: 4px 8px;
-    border-radius: 6px;
-    transition: all 0.15s;
-  }
-  .send-modal-close:hover { background: var(--surface2); color: var(--text); }
-  .send-modal-hint {
-    font-size: 0.78rem;
-    color: var(--text2);
-    padding: 10px 20px 4px;
-  }
-  .send-modal-coaches {
-    padding: 8px 16px 12px;
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    max-height: 260px;
-    overflow-y: auto;
-  }
-  .send-coach-row {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 10px 14px;
-    cursor: pointer;
-    transition: border-color 0.15s;
-  }
-  .send-coach-row:hover { border-color: var(--accent); }
-  .send-coach-cb {
-    width: 16px;
-    height: 16px;
-    accent-color: var(--accent);
-    cursor: pointer;
-    flex-shrink: 0;
-  }
-  .send-coach-name {
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: #00aff0;
+    color: #fff;
+    font-family: 'DM Sans', sans-serif;
     font-size: 0.88rem;
     font-weight: 600;
-    color: var(--text);
-    flex: 1;
-  }
-  .send-coach-title {
-    font-size: 0.72rem;
-    color: var(--text2);
+    padding: 12px 24px;
+    border-radius: 30px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+    opacity: 0;
+    transition: opacity 0.3s, transform 0.3s;
+    pointer-events: none;
+    z-index: 2000;
     white-space: nowrap;
   }
-  .send-coach-phone {
-    font-size: 0.72rem;
-    color: var(--text3);
-    white-space: nowrap;
-    font-family: monospace;
-  }
-  .send-modal-footer {
-    display: flex;
-    gap: 10px;
-    justify-content: flex-end;
-    padding: 12px 20px 16px;
-    border-top: 1px solid var(--border);
+  .groupme-toast.visible {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
   }
 
   @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
@@ -1058,7 +981,7 @@
     <button class="btn btn-primary" onclick="clearDefense()">Reset to Defaults</button>
     <button class="btn btn-save" onclick="saveLineup()">💾 Save</button>
     <button class="btn btn-edit" onclick="editLineup()" style="display:none;">✏️ Edit</button>
-    <button class="btn btn-send" onclick="sendLineup()" style="display:none;">📲 Send to Coaches</button>
+    <button class="btn btn-groupme" onclick="openGroupMe()" style="display:none;">💬 Share Lineup via GroupMe</button>
     <div class="opponent-field">
       <label class="opponent-label" for="opponent-input">vs.</label>
       <input id="opponent-input" class="opponent-input" type="text" placeholder="Opponent team name"
@@ -1305,7 +1228,7 @@
   <div class="action-bar">
     <button class="btn btn-save" onclick="saveLineup()">💾 Save</button>
     <button class="btn btn-edit" onclick="editLineup()" style="display:none;">✏️ Edit</button>
-    <button class="btn btn-send" onclick="sendLineup()" style="display:none;">📲 Send to Coaches</button>
+    <button class="btn btn-groupme" onclick="openGroupMe()" style="display:none;">💬 Share Lineup via GroupMe</button>
     <div class="opponent-field">
       <label class="opponent-label" for="opponent-input-offense">vs.</label>
       <input id="opponent-input-offense" class="opponent-input" type="text" placeholder="Opponent team name"
@@ -2264,7 +2187,7 @@ function saveLineup() {
   // Toggle buttons
   document.querySelectorAll(".btn-save").forEach(b => b.style.display = "none");
   document.querySelectorAll(".btn-edit").forEach(b => b.style.display = "");
-  document.querySelectorAll(".btn-send").forEach(b => b.style.display = "");
+  document.querySelectorAll(".btn-groupme").forEach(b => b.style.display = "");
 }
 
 function editLineup() {
@@ -2288,106 +2211,69 @@ function editLineup() {
   // Toggle buttons
   document.querySelectorAll(".btn-save").forEach(b => b.style.display = "");
   document.querySelectorAll(".btn-edit").forEach(b => b.style.display = "none");
-  document.querySelectorAll(".btn-send").forEach(b => b.style.display = "none");
+  document.querySelectorAll(".btn-groupme").forEach(b => b.style.display = "none");
 }
 
 // ============================================================
 //  COACHES LIST  (add more here as needed)
 // ============================================================
-const coaches = [
-  { name: "Mark Csepke",      title: "Assistant Coach", phone: "12818021521" },
-  { name: "Stephanie Csepke", title: "Assistant Coach", phone: "18326463802" },
-];
-
 // ============================================================
-//  SEND LINEUP VIA SMS — checkbox modal
+//  GROUPME
 // ============================================================
-function sendLineup() {
-  const body = buildLineupText();
+const GROUPME_GROUP_ID = "114824313";
 
-  // If no coaches defined, open bare compose with just the body
-  if (!coaches.length) {
-    window.location.href = `sms:?body=${encodeURIComponent(body)}`;
-    return;
-  }
+function openGroupMe() {
+  const text = buildLineupText();
 
-  // Build / show the modal
-  let modal = document.getElementById("send-modal");
-  if (!modal) {
-    modal = document.createElement("div");
-    modal.id = "send-modal";
-    modal.className = "send-modal-overlay";
-    document.body.appendChild(modal);
-  }
-
-  modal.innerHTML = `
-    <div class="send-modal">
-      <div class="send-modal-header">
-        <span class="send-modal-title">📲 Send Lineup</span>
-        <button class="send-modal-close" onclick="document.getElementById('send-modal').style.display='none'">✕</button>
-      </div>
-      <p class="send-modal-hint">Select recipients then tap Send. Uncheck all to open a blank compose.</p>
-      <div class="send-modal-coaches" id="send-coach-list"></div>
-      <div class="send-modal-footer">
-        <button class="btn btn-ghost" onclick="document.getElementById('send-modal').style.display='none'">Cancel</button>
-        <button class="btn btn-send" onclick="dispatchSMS()">📲 Send</button>
-      </div>
-    </div>`;
-
-  const list = modal.querySelector("#send-coach-list");
-  coaches.forEach((coach, i) => {
-    const row = document.createElement("label");
-    row.className = "send-coach-row";
-    row.innerHTML = `
-      <input type="checkbox" class="send-coach-cb" data-idx="${i}" checked>
-      <span class="send-coach-name">${coach.name}</span>
-      <span class="send-coach-title">${coach.title}</span>
-      <span class="send-coach-phone">${formatPhone(coach.phone)}</span>`;
-    list.appendChild(row);
-  });
-
-  // Store body for dispatchSMS to use
-  modal.dataset.body = body;
-  modal.style.display = "flex";
-}
-
-function dispatchSMS() {
-  const modal = document.getElementById("send-modal");
-  const body  = encodeURIComponent(modal.dataset.body || "");
-  const selected = [...modal.querySelectorAll(".send-coach-cb:checked")]
-    .map(cb => coaches[parseInt(cb.dataset.idx)].phone);
-
-  modal.style.display = "none";
-
-  if (!selected.length) {
-    window.location.href = `sms:?body=${body}`;
-    return;
-  }
-
-  if (selected.length === 1) {
-    window.location.href = `sms:${selected[0]}?body=${body}`;
-  } else {
-    // Open one SMS window per recipient with a short stagger
-    selected.forEach((phone, i) => {
-      setTimeout(() => {
-        window.open(`sms:${phone}?body=${body}`, "_blank");
-      }, i * 700);
+  // Copy lineup text to clipboard
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(() => {
+      showGroupMeToast();
+    }).catch(() => {
+      fallbackCopy(text);
+      showGroupMeToast();
     });
+  } else {
+    fallbackCopy(text);
+    showGroupMeToast();
   }
+
+  // Open GroupMe group — try app deep link first, fall back to web
+  const appLink = `groupme://groups/${GROUPME_GROUP_ID}`;
+  const webLink = `https://app.groupme.com/groups/${GROUPME_GROUP_ID}`;
+
+  // Try the app deep link; if it doesn't open within 1s, open the web version
+  const start = Date.now();
+  window.location.href = appLink;
+  setTimeout(() => {
+    if (Date.now() - start < 1500) {
+      window.open(webLink, "_blank");
+    }
+  }, 1000);
 }
 
-function formatPhone(raw) {
-  // Format 12818021521 → (281) 802-1521
-  const digits = raw.replace(/\D/g, "").replace(/^1/, "");
-  if (digits.length === 10) {
-    return `(${digits.slice(0,3)}) ${digits.slice(3,6)}-${digits.slice(6)}`;
-  }
-  return raw;
+function fallbackCopy(text) {
+  const ta = document.createElement("textarea");
+  ta.value = text;
+  ta.style.cssText = "position:fixed;opacity:0;top:0;left:0;";
+  document.body.appendChild(ta);
+  ta.select();
+  try { document.execCommand("copy"); } catch(e) {}
+  document.body.removeChild(ta);
 }
 
-// ============================================================
-//  BUILD LINEUP TEXT MESSAGE
-// ============================================================
+function showGroupMeToast() {
+  let toast = document.getElementById("groupme-toast");
+  if (!toast) {
+    toast = document.createElement("div");
+    toast.id = "groupme-toast";
+    toast.className = "groupme-toast";
+    document.body.appendChild(toast);
+  }
+  toast.textContent = "✓ Lineup copied — paste it into GroupMe";
+  toast.classList.add("visible");
+  setTimeout(() => toast.classList.remove("visible"), 3500);
+}
 function buildLineupText() {
   const lines = [];
   const date = new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
