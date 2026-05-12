@@ -1253,7 +1253,6 @@ const players = [
   { name: "Abigail B.",   pref: "3B", alt: "SS", bats: "R", startPos: "3B",             batOrder: 4,  unavailable: false },
   { name: "Aubrey L.",    pref: "1B", alt: "P",  bats: "R", startPos: "1B",             batOrder: 5,  unavailable: false, pitchOrder: 2 },
   { name: "Lilyana A.",   pref: "1B", alt: "P",  bats: "R", startPos: "Bench",          batOrder: 6,  unavailable: false, pitchOrder: 4 },
-  { name: "Madelyn L.",   pref: "P",  alt: "1B", bats: "R", startPos: "Bench",          batOrder: 15, unavailable: false, pitchOrder: 6 },
   { name: "Genesis G.",   pref: "SS", alt: "OF", bats: "R", startPos: "Bench",          batOrder: 14, unavailable: false },
   { name: "Ariella B.",   pref: "2B", alt: "OF", bats: "R", startPos: "LF",             batOrder: 7,  unavailable: false },
   { name: "Kenlee B.",    pref: "2B", alt: "P",  bats: "S", startPos: "2B",             batOrder: 2,  unavailable: false, pitchOrder: 7 },
@@ -2499,7 +2498,6 @@ function resetInputsToDefault() {
     { pref:"3B", alt:"SS",  startPos:"3B",             batOrder:4  },
     { pref:"1B", alt:"P",   startPos:"1B",             batOrder:5  },
     { pref:"1B", alt:"P",   startPos:"Bench",          batOrder:6  },
-    { pref:"P",  alt:"1B",  startPos:"Bench",          batOrder:15 },
     { pref:"SS", alt:"OF",  startPos:"Bench",          batOrder:14 },
     { pref:"2B", alt:"OF",  startPos:"LF",             batOrder:7  },
     { pref:"2B", alt:"P",   startPos:"2B",             batOrder:2  },
@@ -2532,7 +2530,7 @@ function resetInputsToDefault() {
 // ============================================================
 //  LOCAL STORAGE PERSISTENCE
 // ============================================================
-const STORAGE_KEY = "afs_lineup_v2";
+const STORAGE_KEY = "afs_lineup_v3";
 
 function saveState() {
   try {
