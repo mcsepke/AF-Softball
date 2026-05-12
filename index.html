@@ -1255,7 +1255,7 @@ const players = [
   { name: "Lilyana A.",   pref: "1B", alt: "P",  bats: "R", startPos: "Bench",          batOrder: 6,  unavailable: false, pitchOrder: 4 },
   { name: "Genesis G.",   pref: "SS", alt: "OF", bats: "R", startPos: "Bench",          batOrder: 14, unavailable: false },
   { name: "Ariella B.",   pref: "2B", alt: "OF", bats: "R", startPos: "LF",             batOrder: 7,  unavailable: false },
-  { name: "Kenlee B.",    pref: "2B", alt: "P",  bats: "S", startPos: "2B",             batOrder: 2,  unavailable: false, pitchOrder: 7 },
+  { name: "Kenlee B.",    pref: "2B", alt: "P",  bats: "S", startPos: "2B",             batOrder: 2,  unavailable: false, pitchOrder: 7, backupC: true },
   { name: "Raegan H.",    pref: "SS", alt: "OF", bats: "R", startPos: "SS",             batOrder: 1,  unavailable: false },
   { name: "Gabriella P.", pref: "1B", alt: "P",  bats: "R", startPos: "Backup Pitcher", batOrder: 9,  unavailable: false, pitchOrder: 3 },
   { name: "Kyra B.",      pref: "2B", alt: "P",  bats: "R", startPos: "Bench",          batOrder: 13, unavailable: false, pitchOrder: 5 },
@@ -1560,7 +1560,7 @@ function buildStatusPanel() {
     noneOpt2.style.color = "#e8304a";
     bcSel.appendChild(noneOpt2);
     players
-      .filter(p => (p.pref === "C" || p.alt === "C") && p.name !== starterC && !p.unavailable)
+      .filter(p => (p.pref === "C" || p.alt === "C" || p.backupC) && p.name !== starterC && !p.unavailable)
       .sort((a, b) => a.name.localeCompare(b.name))
       .forEach(p => {
         const o = document.createElement("option");
